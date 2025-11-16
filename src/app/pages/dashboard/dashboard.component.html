@@ -1,0 +1,105 @@
+<div class="dashboard">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1>Dashboard</h1>
+      <p class="text-muted">Resumen general de la academia</p>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4" *ngFor="let stat of stats">
+      <div class="card border-left-{{stat.color}} shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-{{stat.color}} text-uppercase mb-1">
+                {{stat.title}}
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">{{stat.value}}</div>
+            </div>
+            <div class="col-auto">
+              <i class="{{stat.icon}} fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <a [routerLink]="stat.route" class="btn btn-sm btn-outline-{{stat.color}} w-100">
+            Ver detalles
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido en dos columnas -->
+  <div class="row">
+    <!-- Alumnos Recientes -->
+    <div class="col-xl-6 col-lg-6">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+          <h6 class="m-0 font-weight-bold text-primary">Alumnos Recientes</h6>
+          <a routerLink="/admin/alumnos" class="btn btn-sm btn-primary">Ver todos</a>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Curso</th>
+                  <th>Fecha Alta</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let alumno of recentAlumnos">
+                  <td>{{alumno.nombre}}</td>
+                  <td>{{alumno.curso}}</td>
+                  <td>{{alumno.fecha}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="col-xl-6 col-lg-6">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Acciones Rápidas</h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <a routerLink="/admin/alumnos/nuevo" class="btn btn-primary w-100">
+                <i class="bi bi-person-plus me-2"></i>
+                Nuevo Alumno
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a routerLink="/admin/profesores/nuevo" class="btn btn-success w-100">
+                <i class="bi bi-person-badge me-2"></i>
+                Nuevo Profesor
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a routerLink="/admin/horarios" class="btn btn-info w-100">
+                <i class="bi bi-calendar-plus me-2"></i>
+                Crear Horario
+              </a>
+            </div>
+            <div class="col-md-6 mb-3">
+              <a routerLink="/admin/recibos" class="btn btn-warning w-100">
+                <i class="bi bi-receipt me-2"></i>
+                Generar Recibos
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

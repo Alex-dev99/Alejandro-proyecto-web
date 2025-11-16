@@ -1,0 +1,32 @@
+<header class="topbar">
+  <div class="topbar-content">
+    <div class="topbar-left">
+      <div class="d-flex align-items-center">
+        <img src="../../../shared/components/images/logo1.PNG" alt="Logo Academia" class="logo me-3" height="40">
+        <h5 class="mb-0 brand-title">ACADEMIA</h5>
+      </div>
+    </div>
+    
+    <div class="topbar-right">
+      <div class="dropdown">
+        <button class="btn btn-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle me-2"></i>
+          Administrador
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" routerLink="/admin/perfil">
+              <i class="bi bi-person me-2"></i>Perfil
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a class="dropdown-item text-danger" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>

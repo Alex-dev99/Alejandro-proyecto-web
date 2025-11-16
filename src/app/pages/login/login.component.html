@@ -1,0 +1,97 @@
+<div class="container-fluid vh-100 bg-light">
+  <div class="row h-100 justify-content-center align-items-center">
+    <div class="col-md-4 col-sm-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white text-center py-4">
+          <!-- Logo en el login -->
+          <div class="d-flex justify-content-center align-items-center mb-3">
+            <img src="../../shared/components/images/logo1.PNG" alt="Logo Academia" class="logo me-3" height="50">
+            <div class="text-start">
+              <h3 class="mb-0 fw-bold">ACADEMIA</h3>
+              <small class="opacity-75">Panel de Administración</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-4">
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                formControlName="email"
+                placeholder="admin@academia.com"
+                [class.is-invalid]="email?.invalid && email?.touched">
+              
+              <div class="invalid-feedback" *ngIf="email?.errors?.['required'] && email?.touched">
+                El email es requerido
+              </div>
+              <div class="invalid-feedback" *ngIf="email?.errors?.['email'] && email?.touched">
+                Formato de email inválido
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña</label>
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                formControlName="password"
+                placeholder="••••••••"
+                [class.is-invalid]="password?.invalid && password?.touched">
+              
+              <div class="invalid-feedback" *ngIf="password?.errors?.['required'] && password?.touched">
+                La contraseña es requerida
+              </div>
+              <div class="invalid-feedback" *ngIf="password?.errors?.['minlength'] && password?.touched">
+                Mínimo 4 caracteres
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              {{ errorMessage }}
+              <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              class="btn btn-primary w-100 py-2"
+              [disabled]="loading">
+              
+              <span *ngIf="!loading">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Iniciar Sesión
+              </span>
+              
+              <span *ngIf="loading">
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                Verificando...
+              </span>
+            </button>
+
+          </form>
+
+          <!-- Demo Credentials -->
+          <div class="mt-4 p-3 bg-light rounded">
+            <h6 class="text-center mb-2">Credenciales de Demo:</h6>
+            <div class="small">
+              <strong>Email:</strong> admin@academia.com<br>
+              <strong>Password:</strong> admin123
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

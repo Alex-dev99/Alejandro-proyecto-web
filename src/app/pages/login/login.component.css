@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+.card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.card-header {
+  border-radius: 15px 15px 0 0 !important;
+  border: none;
+  background-color: #2EAECA !important;
+  padding: 2rem 1rem;
+}
+
+.card-header h3, .card-header small {
+  color: white;
+}
+
+.btn-primary {
+  background-color: #2EAECA;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2595b0;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(46, 174, 202, 0.4);
+  color: white;
+}
+
+.form-control {
+  border-radius: 8px;
+  padding: 12px;
+  border: 2px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #2EAECA;
+  box-shadow: 0 0 0 0.2rem rgba(46, 174, 202, 0.25);
+}
+
+.bg-light {
+  background-color: transparent !important;
+}
+
+.alert-danger {
+  border-radius: 8px;
+}

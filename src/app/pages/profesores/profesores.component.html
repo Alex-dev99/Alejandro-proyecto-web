@@ -1,0 +1,196 @@
+<div class="profesores-container">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1>Gestión de Profesores</h1>
+          <p class="text-muted">Administra los profesores de la academia</p>
+        </div>
+        <button class="btn btn-primary" (click)="nuevoProfesor()" *ngIf="!mostrarFormulario">
+          <i class="bi bi-person-badge me-2"></i>
+          Nuevo Profesor
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="row mb-4" *ngIf="mostrarFormulario">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">{{editando ? 'Editar Profesor' : 'Nuevo Profesor'}}</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="profesorForm" (ngSubmit)="guardarProfesor()">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nombre *</label>
+                <input type="text" class="form-control" formControlName="nombre">
+                <div class="text-danger small" *ngIf="profesorForm.get('nombre')?.invalid && profesorForm.get('nombre')?.touched">
+                  Nombre requerido
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Apellidos *</label>
+                <input type="text" class="form-control" formControlName="apellidos">
+                <div class="text-danger small" *ngIf="profesorForm.get('apellidos')?.invalid && profesorForm.get('apellidos')?.touched">
+                  Apellidos requeridos
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Alias *</label>
+                <input type="text" class="form-control" formControlName="alias">
+                <div class="text-danger small" *ngIf="profesorForm.get('alias')?.invalid && profesorForm.get('alias')?.touched">
+                  Alias requerido
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Fecha Nacimiento *</label>
+                <input type="date" class="form-control" formControlName="fecha_nacimiento">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-control" formControlName="email">
+                <div class="text-danger small" *ngIf="profesorForm.get('email')?.invalid && profesorForm.get('email')?.touched">
+                  Email válido requerido
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Cuenta Bancaria (IBAN) *</label>
+                <input type="text" class="form-control" formControlName="cuenta_bancaria" placeholder="ES00 0000 0000 0000 0000">
+                <div class="text-danger small" *ngIf="profesorForm.get('cuenta_bancaria')?.invalid && profesorForm.get('cuenta_bancaria')?.touched">
+                  Cuenta bancaria requerida
+                </div>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">Materias que Imparte *</label>
+                <div class="form-text small mb-2">Separar por comas: Matemáticas,Física,Inglés</div>
+                <input type="text" class="form-control" formControlName="materias_imparte" placeholder="Matemáticas,Física">
+                <div class="text-danger small" *ngIf="profesorForm.get('materias_imparte')?.invalid && profesorForm.get('materias_imparte')?.touched">
+                  Materias requeridas
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="profesorForm.invalid">
+                {{editando ? 'Actualizar' : 'Guardar'}}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-primary">
+        <div class="card-body">
+          <h5 class="card-title">Total Profesores</h5>
+          <p class="card-text display-6">{{totalProfesores}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Profesores Activos</h5>
+          <p class="card-text display-6">{{profesoresActivos}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-info">
+        <div class="card-body">
+          <h5 class="card-title">Materias Impartidas</h5>
+          <p class="card-text display-6">{{totalMaterias}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de profesores -->
+  <div class="card shadow">
+    <div class="card-header bg-white">
+      <h5 class="mb-0">Lista de Profesores</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>Alias</th>
+              <th>Email</th>
+              <th>Materias</th>
+              <th>Cuenta Bancaria</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let profesor of profesores">
+              <td>
+                <strong>{{profesor.nombre}} {{profesor.apellidos}}</strong>
+                <br>
+                <small class="text-muted">Nac: {{profesor.fecha_nacimiento}}</small>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{profesor.alias}}</span>
+              </td>
+              <td>{{profesor.email}}</td>
+              <td>
+                <span *ngFor="let materia of getMateriasArray(profesor.materias_imparte)" 
+                      class="badge bg-info me-1 mb-1">
+                  {{materia.trim()}}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">{{profesor.cuenta_bancaria}}</small>
+              </td>
+              <td>
+                <span class="badge" [class.bg-success]="profesor.activo" [class.bg-danger]="!profesor.activo">
+                  {{profesor.activo ? 'Activo' : 'Inactivo'}}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="editarProfesor(profesor)" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn" 
+                    [class.btn-outline-success]="!profesor.activo" 
+                    [class.btn-outline-warning]="profesor.activo"
+                    (click)="toggleActivo(profesor)"
+                    [title]="profesor.activo ? 'Desactivar' : 'Activar'">
+                    <i class="bi" [class.bi-check]="!profesor.activo" [class.bi-x]="profesor.activo"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="eliminarProfesor(profesor.id_profesor)" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mensaje si no hay profesores -->
+      <div *ngIf="profesores.length === 0" class="text-center py-4">
+        <i class="bi bi-person-badge display-1 text-muted"></i>
+        <p class="text-muted mt-3">No hay profesores registrados</p>
+        <button class="btn btn-primary" (click)="nuevoProfesor()">
+          <i class="bi bi-person-badge me-2"></i>
+          Agregar Primer Profesor
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

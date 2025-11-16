@@ -1,0 +1,188 @@
+<div class="alumnos-container">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1>Gestión de Alumnos</h1>
+          <p class="text-muted">Administra los alumnos de la academia</p>
+        </div>
+        <button class="btn btn-primary" (click)="nuevoAlumno()" *ngIf="!mostrarFormulario">
+          <i class="bi bi-person-plus me-2"></i>
+          Nuevo Alumno
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario (solo se muestra cuando es necesario) -->
+  <div class="row mb-4" *ngIf="mostrarFormulario">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">{{editando ? 'Editar Alumno' : 'Nuevo Alumno'}}</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="alumnoForm" (ngSubmit)="guardarAlumno()">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nombre *</label>
+                <input type="text" class="form-control" formControlName="nombre">
+                <div class="text-danger small" *ngIf="alumnoForm.get('nombre')?.invalid && alumnoForm.get('nombre')?.touched">
+                  Nombre requerido
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Apellidos *</label>
+                <input type="text" class="form-control" formControlName="apellidos">
+                <div class="text-danger small" *ngIf="alumnoForm.get('apellidos')?.invalid && alumnoForm.get('apellidos')?.touched">
+                  Apellidos requeridos
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-control" formControlName="email">
+                <div class="text-danger small" *ngIf="alumnoForm.get('email')?.invalid && alumnoForm.get('email')?.touched">
+                  Email válido requerido
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Curso Actual *</label>
+                <select class="form-select" formControlName="curso_actual">
+                  <option value="">Seleccionar curso</option>
+                  <option *ngFor="let curso of cursos" [value]="curso">{{curso}}</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Materia *</label>
+                <select class="form-select" formControlName="materia">
+                  <option value="">Seleccionar materia</option>
+                  <option *ngFor="let materia of materias" [value]="materia">{{materia}}</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Cuota Mensual (€) *</label>
+                <input type="number" class="form-control" formControlName="cuota_mensual" min="0" step="0.01">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Método de Pago *</label>
+                <select class="form-select" formControlName="metodo_pago">
+                  <option value="">Seleccionar método</option>
+                  <option *ngFor="let metodo of metodosPago" [value]="metodo">{{metodo}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="alumnoForm.invalid">
+                {{editando ? 'Actualizar' : 'Guardar'}}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-primary">
+        <div class="card-body">
+          <h5 class="card-title">Total Alumnos</h5>
+          <p class="card-text display-6">{{totalAlumnos}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Alumnos Activos</h5>
+          <p class="card-text display-6">{{alumnosActivos}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-info">
+        <div class="card-body">
+          <h5 class="card-title">Ingreso Mensual</h5>
+          <p class="card-text display-6">{{ingresoMensual}}€</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de alumnos -->
+  <div class="card shadow">
+    <div class="card-header bg-white">
+      <h5 class="mb-0">Lista de Alumnos</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Curso</th>
+              <th>Materia</th>
+              <th>Cuota</th>
+              <th>Método Pago</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let alumno of alumnos">
+              <td>
+                <strong>{{alumno.nombre}} {{alumno.apellidos}}</strong>
+              </td>
+              <td>{{alumno.email}}</td>
+              <td>{{alumno.curso_actual}}</td>
+              <td>{{alumno.materia}}</td>
+              <td>{{alumno.cuota_mensual}}€</td>
+              <td>
+                <span class="badge bg-secondary">{{alumno.metodo_pago}}</span>
+              </td>
+              <td>
+                <span class="badge" [class.bg-success]="alumno.activo" [class.bg-danger]="!alumno.activo">
+                  {{alumno.activo ? 'Activo' : 'Inactivo'}}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="editarAlumno(alumno)" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    class="btn" 
+                    [class.btn-outline-success]="!alumno.activo" 
+                    [class.btn-outline-warning]="alumno.activo"
+                    (click)="toggleActivo(alumno)"
+                    [title]="alumno.activo ? 'Desactivar' : 'Activar'">
+                    <i class="bi" [class.bi-check]="!alumno.activo" [class.bi-x]="alumno.activo"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="eliminarAlumno(alumno.id_alumno)" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mensaje si no hay alumnos -->
+      <div *ngIf="alumnos.length === 0" class="text-center py-4">
+        <i class="bi bi-people display-1 text-muted"></i>
+        <p class="text-muted mt-3">No hay alumnos registrados</p>
+        <button class="btn btn-primary" (click)="nuevoAlumno()">
+          <i class="bi bi-person-plus me-2"></i>
+          Agregar Primer Alumno
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

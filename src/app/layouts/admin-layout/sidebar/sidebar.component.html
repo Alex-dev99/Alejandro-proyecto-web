@@ -1,0 +1,22 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-header">
+    <div class="d-flex align-items-center" *ngIf="!isCollapsed">
+      <img src="../../../shared/components/images/logo1.PNG" alt="Logo" class="logo me-2" height="30">
+      <h6 class="mb-0">Admin</h6>
+    </div>
+    <button class="btn btn-sm btn-outline-secondary" (click)="onToggleSidebar()">
+      <i class="bi" [class.bi-chevron-left]="!isCollapsed" [class.bi-chevron-right]="isCollapsed"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav flex-column">
+      <li class="nav-item" *ngFor="let item of menuItems">
+        <a class="nav-link" [routerLink]="item.path" routerLinkActive="active">
+          <i class="{{ item.icon }} me-2"></i>
+          <span *ngIf="!isCollapsed">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>

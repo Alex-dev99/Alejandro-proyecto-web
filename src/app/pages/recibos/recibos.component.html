@@ -1,0 +1,178 @@
+<div class="recibos-container">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1>Gestión de Recibos</h1>
+          <p class="text-muted">Administra los recibos y pagos de los alumnos</p>
+        </div>
+        <button class="btn btn-primary" (click)="nuevoRecibo()" *ngIf="!mostrarFormulario">
+          <i class="bi bi-receipt me-2"></i>
+          Nuevo Recibo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="row mb-4" *ngIf="mostrarFormulario">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">{{editando ? 'Editar Recibo' : 'Nuevo Recibo'}}</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="reciboForm" (ngSubmit)="guardarRecibo()">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Alumno *</label>
+                <select class="form-select" formControlName="id_alumno" (change)="onAlumnoChange()">
+                  <option value="">Seleccionar alumno</option>
+                  <option *ngFor="let alumno of alumnos" [value]="alumno.id_alumno">
+                    {{alumno.nombre}} {{alumno.apellidos}} ({{alumno.cuota_mensual}}€)
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Mes *</label>
+                <select class="form-select" formControlName="mes">
+                  <option value="">Seleccionar mes</option>
+                  <option *ngFor="let mes of meses" [value]="mes">{{mes}}</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Importe (€) *</label>
+                <input type="number" class="form-control" formControlName="importe" min="0" step="0.01">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Estado *</label>
+                <select class="form-select" formControlName="estado">
+                  <option value="PENDIENTE">PENDIENTE</option>
+                  <option value="PAGADO">PAGADO</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="reciboForm.invalid">
+                {{editando ? 'Actualizar' : 'Guardar'}}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-primary">
+        <div class="card-body">
+          <h5 class="card-title">Total Recibos</h5>
+          <p class="card-text display-6">{{totalRecibos}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Recibos Pagados</h5>
+          <p class="card-text display-6">{{recibosPagados}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-info">
+        <div class="card-body">
+          <h5 class="card-title">Ingresos Totales</h5>
+          <p class="card-text">{{ingresosTotales}}€</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-warning">
+        <div class="card-body">
+          <h5 class="card-title">Pendiente de Cobro</h5>
+          <p class="card-text">{{pendienteCobro}}€</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de recibos -->
+  <div class="card shadow">
+    <div class="card-header bg-white">
+      <h5 class="mb-0">Lista de Recibos</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Alumno</th>
+              <th>Mes</th>
+              <th>Importe</th>
+              <th>Estado</th>
+              <th>Fecha Emisión</th>
+              <th>Fecha Pago</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let recibo of recibos">
+              <td>
+                <strong>{{getNombreAlumno(recibo.id_alumno)}}</strong>
+              </td>
+              <td>{{recibo.mes}}</td>
+              <td>
+                <strong>{{recibo.importe}}€</strong>
+              </td>
+              <td>
+                <span class="badge" [class.bg-success]="recibo.estado === 'PAGADO'" [class.bg-warning]="recibo.estado === 'PENDIENTE'">
+                  {{recibo.estado}}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">{{recibo.fecha_emision}}</small>
+              </td>
+              <td>
+                <small class="text-muted">{{recibo.fecha_pago || '--'}}</small>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="editarRecibo(recibo)" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button 
+                    *ngIf="recibo.estado === 'PENDIENTE'"
+                    class="btn btn-outline-success" 
+                    (click)="marcarComoPagado(recibo)"
+                    title="Marcar como pagado">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="eliminarRecibo(recibo.id_recibo)" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mensaje si no hay recibos -->
+      <div *ngIf="recibos.length === 0" class="text-center py-4">
+        <i class="bi bi-receipt display-1 text-muted"></i>
+        <p class="text-muted mt-3">No hay recibos registrados</p>
+        <button class="btn btn-primary" (click)="nuevoRecibo()">
+          <i class="bi bi-receipt me-2"></i>
+          Crear Primer Recibo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

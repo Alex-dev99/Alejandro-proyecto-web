@@ -1,0 +1,123 @@
+<div class="aulas-container">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1>Gestión de Aulas</h1>
+          <p class="text-muted">Administra las aulas de la academia</p>
+        </div>
+        <button class="btn btn-primary" (click)="nuevaAula()" *ngIf="!mostrarFormulario">
+          <i class="bi bi-building me-2"></i>
+          Nueva Aula
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="row mb-4" *ngIf="mostrarFormulario">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">{{editando ? 'Editar Aula' : 'Nueva Aula'}}</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="aulaForm" (ngSubmit)="guardarAula()">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Nombre del Aula *</label>
+                <input type="text" class="form-control" formControlName="nombre" placeholder="Aula 1">
+                <div class="text-danger small" *ngIf="aulaForm.get('nombre')?.invalid && aulaForm.get('nombre')?.touched">
+                  Nombre requerido
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Capacidad *</label>
+                <input type="number" class="form-control" formControlName="capacidad" min="1" placeholder="5">
+                <div class="text-danger small" *ngIf="aulaForm.get('capacidad')?.invalid && aulaForm.get('capacidad')?.touched">
+                  Capacidad requerida (mínimo 1)
+                </div>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">Descripción *</label>
+                <textarea class="form-control" formControlName="descripcion" rows="3" placeholder="Aula principal con pizarra digital..."></textarea>
+                <div class="text-danger small" *ngIf="aulaForm.get('descripcion')?.invalid && aulaForm.get('descripcion')?.touched">
+                  Descripción requerida
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="aulaForm.invalid">
+                {{editando ? 'Actualizar' : 'Guardar'}}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-primary">
+        <div class="card-body">
+          <h5 class="card-title">Total Aulas</h5>
+          <p class="card-text display-6">{{totalAulas}}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Capacidad Total</h5>
+          <p class="card-text display-6">{{capacidadTotal}} alumnos</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de aulas -->
+  <div class="row">
+    <div class="col-md-4 mb-4" *ngFor="let aula of aulas">
+      <div class="card shadow h-100">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">{{aula.nombre}}</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <span class="badge {{getColorCapacidad(aula.capacidad)}} me-2">
+              {{aula.capacidad}} alumnos
+            </span>
+            <small class="text-muted">{{getEstadoCapacidad(aula.capacidad)}}</small>
+          </div>
+          <p class="card-text">{{aula.descripcion}}</p>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="btn-group w-100">
+            <button class="btn btn-outline-primary btn-sm" (click)="editarAula(aula)" title="Editar">
+              <i class="bi bi-pencil me-1"></i> Editar
+            </button>
+            <button class="btn btn-outline-danger btn-sm" (click)="eliminarAula(aula.id_aula)" title="Eliminar">
+              <i class="bi bi-trash me-1"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje si no hay aulas -->
+  <div *ngIf="aulas.length === 0" class="text-center py-4">
+    <i class="bi bi-building display-1 text-muted"></i>
+    <p class="text-muted mt-3">No hay aulas registradas</p>
+    <button class="btn btn-primary" (click)="nuevaAula()">
+      <i class="bi bi-building me-2"></i>
+      Agregar Primera Aula
+    </button>
+  </div>
+</div>
