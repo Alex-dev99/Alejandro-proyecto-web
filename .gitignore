@@ -1,3 +1,27 @@
+node_modules/
+dist/
+dist-*/
+/.angular/
+.angular/cache/
+.cache/
+coverage/
+tmp/
+temp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+.env.*
+.DS_Store
+.vscode/
+.idea/
+*.log
+/.sass-cache
+/.serverless
+/.parcel-cache
+/.turbo
+/.nyc_output
+/.cache
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Compiled output

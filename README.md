@@ -1,3 +1,36 @@
+# Alejandro-proyecto-web
+
+Proyecto Angular simple con soporte SSR (server-side rendering).
+
+Requisitos
+- Node.js (>=18 recomendado)
+- npm
+- Angular CLI (opcional para desarrollo: `npm install -g @angular/cli`)
+
+Instalación
+
+```bash
+npm install
+```
+
+Desarrollo
+
+```bash
+npm start
+# o
+npm run ng -- serve
+```
+
+Build y SSR
+
+```bash
+npm run build
+npm run serve:ssr:Alejandro-Proyecto-web
+```
+
+Notas
+- Este repositorio se subió desde la máquina local.
+- Si necesitas que ajuste el `README` con más detalles (descripción, licencias, pasos de despliegue), dímelo y lo complemento.
 # AlejandroProyectoWeb
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
