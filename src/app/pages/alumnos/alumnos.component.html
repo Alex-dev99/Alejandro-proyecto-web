@@ -1,5 +1,4 @@
 <div class="alumnos-container">
-  <!-- Header -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="d-flex justify-content-between align-items-center">
@@ -15,7 +14,6 @@
     </div>
   </div>
 
-  <!-- Formulario (solo se muestra cuando es necesario) -->
   <div class="row mb-4" *ngIf="mostrarFormulario">
     <div class="col-12">
       <div class="card shadow">
@@ -71,12 +69,39 @@
                   <option *ngFor="let metodo of metodosPago" [value]="metodo">{{metodo}}</option>
                 </select>
               </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Contraseña 
+                  <span *ngIf="!editando" class="text-danger">*</span>
+                  <span *ngIf="editando" class="text-muted small">(dejar en blanco para no cambiar)</span>
+                </label>
+                <div class="input-group">
+                  <input 
+                    [type]="mostrarPassword ? 'text' : 'password'" 
+                    class="form-control" 
+                    formControlName="password"
+                    placeholder="Mínimo 6 caracteres">
+                  <button 
+                    class="btn btn-outline-secondary" 
+                    type="button" 
+                    (click)="togglePasswordVisibility()">
+                    <i class="bi" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  </button>
+                </div>
+                <div class="text-danger small" *ngIf="alumnoForm.get('password')?.invalid && alumnoForm.get('password')?.touched">
+                  La contraseña debe tener al menos 6 caracteres
+                </div>
+              </div>
             </div>
+
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary" [disabled]="alumnoForm.invalid">
+                <i class="bi bi-check-circle me-1"></i>
                 {{editando ? 'Actualizar' : 'Guardar'}}
               </button>
               <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                <i class="bi bi-x-circle me-1"></i>
                 Cancelar
               </button>
             </div>
@@ -86,7 +111,6 @@
     </div>
   </div>
 
-  <!-- Estadísticas rápidas -->
   <div class="row mb-4">
     <div class="col-md-3 mb-3">
       <div class="card text-white bg-primary">
@@ -114,7 +138,6 @@
     </div>
   </div>
 
-  <!-- Tabla de alumnos -->
   <div class="card shadow">
     <div class="card-header bg-white">
       <h5 class="mb-0">Lista de Alumnos</h5>
@@ -174,7 +197,6 @@
         </table>
       </div>
 
-      <!-- Mensaje si no hay alumnos -->
       <div *ngIf="alumnos.length === 0" class="text-center py-4">
         <i class="bi bi-people display-1 text-muted"></i>
         <p class="text-muted mt-3">No hay alumnos registrados</p>

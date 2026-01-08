@@ -14,6 +14,7 @@ interface Alumno {
   metodo_pago: string;
   fecha_alta: string;
   activo: boolean;
+  password: string;
 }
 
 @Component({
@@ -35,7 +36,8 @@ export class AlumnosComponent {
       cuota_mensual: 120.00,
       metodo_pago: 'Transferencia',
       fecha_alta: '2024-01-15',
-      activo: true
+      activo: true,
+      password: 'hashed_pass_alumno_1' 
     },
     {
       id_alumno: 2,
@@ -47,7 +49,8 @@ export class AlumnosComponent {
       cuota_mensual: 100.00,
       metodo_pago: 'Efectivo',
       fecha_alta: '2024-01-14',
-      activo: true
+      activo: true,
+      password: 'hashed_pass_alumno_2' 
     }
   ];
 
@@ -55,6 +58,7 @@ export class AlumnosComponent {
   editando = false;
   alumnoEditando: Alumno | null = null;
   mostrarFormulario = false;
+  mostrarPassword = false; 
 
   metodosPago = ['Efectivo', 'Tarjeta', 'Transferencia', 'Bizum'];
   cursos = ['1º ESO', '2º ESO', '3º ESO', '4º ESO', '1º Bachillerato', '2º Bachillerato'];
@@ -68,11 +72,11 @@ export class AlumnosComponent {
       curso_actual: ['', [Validators.required]],
       materia: ['', [Validators.required]],
       cuota_mensual: ['', [Validators.required, Validators.min(0)]],
-      metodo_pago: ['', [Validators.required]]
+      metodo_pago: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(6)]]  
     });
   }
 
-  // Propiedades calculadas
   get totalAlumnos(): number {
     return this.alumnos.length;
   }
@@ -87,12 +91,15 @@ export class AlumnosComponent {
       .reduce((total, alumno) => total + alumno.cuota_mensual, 0);
   }
 
-  // CRUD Operations
   nuevoAlumno(): void {
     this.editando = false;
     this.alumnoEditando = null;
     this.alumnoForm.reset();
     this.mostrarFormulario = true;
+    this.mostrarPassword = false;
+    
+    this.alumnoForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.alumnoForm.get('password')?.updateValueAndValidity();
   }
 
   editarAlumno(alumno: Alumno): void {
@@ -105,9 +112,19 @@ export class AlumnosComponent {
       curso_actual: alumno.curso_actual,
       materia: alumno.materia,
       cuota_mensual: alumno.cuota_mensual,
-      metodo_pago: alumno.metodo_pago
+      metodo_pago: alumno.metodo_pago,
+      password: '' 
     });
     this.mostrarFormulario = true;
+    this.mostrarPassword = false;
+    
+    this.alumnoForm.get('password')?.clearValidators();
+    this.alumnoForm.get('password')?.setValidators([Validators.minLength(6)]);
+    this.alumnoForm.get('password')?.updateValueAndValidity();
+  }
+
+  togglePasswordVisibility(): void {
+    this.mostrarPassword = !this.mostrarPassword;
   }
 
   guardarAlumno(): void {
@@ -115,20 +132,25 @@ export class AlumnosComponent {
       const alumnoData = this.alumnoForm.value;
 
       if (this.editando && this.alumnoEditando) {
-        // Actualizar alumno existente
         const index = this.alumnos.findIndex(a => a.id_alumno === this.alumnoEditando!.id_alumno);
+        
+        if (!alumnoData.password) {
+          alumnoData.password = this.alumnoEditando.password;
+        }
+        
         this.alumnos[index] = {
           ...this.alumnoEditando,
           ...alumnoData
         };
       } else {
-        // Crear nuevo alumno
         const nuevoAlumno: Alumno = {
           id_alumno: Math.max(...this.alumnos.map(a => a.id_alumno)) + 1,
           ...alumnoData,
           fecha_alta: new Date().toISOString().split('T')[0],
           activo: true
         };
+        
+        
         this.alumnos.push(nuevoAlumno);
       }
 
@@ -141,6 +163,7 @@ export class AlumnosComponent {
     this.editando = false;
     this.alumnoEditando = null;
     this.alumnoForm.reset();
+    this.mostrarPassword = false;
   }
 
   toggleActivo(alumno: Alumno): void {

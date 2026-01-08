@@ -1,5 +1,4 @@
 <div class="profesores-container">
-  <!-- Header -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="d-flex justify-content-between align-items-center">
@@ -15,7 +14,6 @@
     </div>
   </div>
 
-  <!-- Formulario -->
   <div class="row mb-4" *ngIf="mostrarFormulario">
     <div class="col-12">
       <div class="card shadow">
@@ -72,12 +70,57 @@
                   Materias requeridas
                 </div>
               </div>
+
+              <!-- ← NUEVO: Campo Password -->
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  Contraseña 
+                  <span *ngIf="!editando" class="text-danger">*</span>
+                  <span *ngIf="editando" class="text-muted small">(dejar en blanco para no cambiar)</span>
+                </label>
+                <div class="input-group">
+                  <input 
+                    [type]="mostrarPassword ? 'text' : 'password'" 
+                    class="form-control" 
+                    formControlName="password"
+                    placeholder="Mínimo 6 caracteres">
+                  <button 
+                    class="btn btn-outline-secondary" 
+                    type="button" 
+                    (click)="togglePasswordVisibility()">
+                    <i class="bi" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  </button>
+                </div>
+                <div class="text-danger small" *ngIf="profesorForm.get('password')?.invalid && profesorForm.get('password')?.touched">
+                  La contraseña debe tener al menos 6 caracteres
+                </div>
+              </div>
+
+              <!-- ← NUEVO: Campo Checkbox Administrador -->
+              <div class="col-md-6 mb-3 d-flex align-items-end">
+                <div class="form-check form-switch">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="administrador" 
+                    formControlName="administrador"
+                    style="width: 3rem; height: 1.5rem; cursor: pointer;">
+                  <label class="form-check-label ms-2" for="administrador" style="cursor: pointer;">
+                    <strong>¿Es Administrador?</strong>
+                    <br>
+                    <small class="text-muted">Otorga permisos de administrador</small>
+                  </label>
+                </div>
+              </div>
             </div>
+
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary" [disabled]="profesorForm.invalid">
+                <i class="bi bi-check-circle me-1"></i>
                 {{editando ? 'Actualizar' : 'Guardar'}}
               </button>
               <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                <i class="bi bi-x-circle me-1"></i>
                 Cancelar
               </button>
             </div>
@@ -113,6 +156,15 @@
         </div>
       </div>
     </div>
+    <!-- ← NUEVO: Card de Administradores -->
+    <div class="col-md-3 mb-3">
+      <div class="card text-white bg-warning">
+        <div class="card-body">
+          <h5 class="card-title">Administradores</h5>
+          <p class="card-text display-6">{{profesoresAdministradores}}</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Tabla de profesores -->
@@ -130,6 +182,7 @@
               <th>Email</th>
               <th>Materias</th>
               <th>Cuenta Bancaria</th>
+              <th>Rol</th> <!-- ← NUEVO -->
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -153,6 +206,16 @@
               </td>
               <td>
                 <small class="text-muted">{{profesor.cuenta_bancaria}}</small>
+              </td>
+              <!-- ← NUEVO: Columna de Rol (Administrador o Profesor) -->
+              <td>
+                <span 
+                  class="badge" 
+                  [class.bg-warning]="profesor.administrador" 
+                  [class.bg-secondary]="!profesor.administrador">
+                  <i class="bi" [class.bi-shield-fill-check]="profesor.administrador" [class.bi-person]="!profesor.administrador"></i>
+                  {{profesor.administrador ? 'Admin' : 'Profesor'}}
+                </span>
               </td>
               <td>
                 <span class="badge" [class.bg-success]="profesor.activo" [class.bg-danger]="!profesor.activo">
