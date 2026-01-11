@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-login',
-  standalone: true, // <-- Asegúrate que tiene standalone
+  standalone: true, 
   imports: [ReactiveFormsModule, CommonModule], 
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
@@ -31,7 +31,6 @@ export class LoginComponent {
       this.loading = true;
       this.errorMessage = '';
 
-      // Simulación de login
       setTimeout(() => {
         this.loading = false;
         const { email, password } = this.loginForm.value;
@@ -50,7 +49,6 @@ export class LoginComponent {
     }
   }
 
-  // Getters para el template
   get email() { return this.loginForm.get('email'); }
   get password() { return this.loginForm.get('password'); }
 }

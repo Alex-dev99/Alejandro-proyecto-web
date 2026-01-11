@@ -6,7 +6,7 @@
           <h1>Gestión de Profesores</h1>
           <p class="text-muted">Administra los profesores de la academia</p>
         </div>
-        <button class="btn btn-primary" (click)="nuevoProfesor()" *ngIf="!mostrarFormulario">
+        <button class="btn btn-primary" (click)="nuevoProfesor()" *ngIf="!mostrarFormulario && !cargando">
           <i class="bi bi-person-badge me-2"></i>
           Nuevo Profesor
         </button>
@@ -14,11 +14,26 @@
     </div>
   </div>
 
-  <div class="row mb-4" *ngIf="mostrarFormulario">
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-3">Cargando profesores...</p>
+  </div>
+
+  <div *ngIf="errorCarga && !cargando" class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ errorCarga }}
+  </div>
+
+  <div class="row mb-4" *ngIf="mostrarFormulario && !cargando">
     <div class="col-12">
       <div class="card shadow">
-        <div class="card-header bg-white">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
           <h5 class="mb-0">{{editando ? 'Editar Profesor' : 'Nuevo Profesor'}}</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">
+            <i class="bi bi-x"></i>
+          </button>
         </div>
         <div class="card-body">
           <form [formGroup]="profesorForm" (ngSubmit)="guardarProfesor()">
@@ -27,7 +42,7 @@
                 <label class="form-label">Nombre *</label>
                 <input type="text" class="form-control" formControlName="nombre">
                 <div class="text-danger small" *ngIf="profesorForm.get('nombre')?.invalid && profesorForm.get('nombre')?.touched">
-                  Nombre requerido
+                  Nombre requerido (mínimo 2 caracteres)
                 </div>
               </div>
               <div class="col-md-6 mb-3">
@@ -59,7 +74,7 @@
                 <label class="form-label">Cuenta Bancaria (IBAN) *</label>
                 <input type="text" class="form-control" formControlName="cuenta_bancaria" placeholder="ES00 0000 0000 0000 0000">
                 <div class="text-danger small" *ngIf="profesorForm.get('cuenta_bancaria')?.invalid && profesorForm.get('cuenta_bancaria')?.touched">
-                  Cuenta bancaria requerida
+                  Cuenta bancaria requerida (mínimo 20 caracteres)
                 </div>
               </div>
               <div class="col-12 mb-3">
@@ -70,57 +85,35 @@
                   Materias requeridas
                 </div>
               </div>
-
-              <!-- ← NUEVO: Campo Password -->
               <div class="col-md-6 mb-3">
-                <label class="form-label">
-                  Contraseña 
-                  <span *ngIf="!editando" class="text-danger">*</span>
-                  <span *ngIf="editando" class="text-muted small">(dejar en blanco para no cambiar)</span>
-                </label>
+                <label class="form-label">Password {{editando ? '(dejar en blanco para mantener)' : '*'}}</label>
                 <div class="input-group">
-                  <input 
-                    [type]="mostrarPassword ? 'text' : 'password'" 
-                    class="form-control" 
-                    formControlName="password"
-                    placeholder="Mínimo 6 caracteres">
-                  <button 
-                    class="btn btn-outline-secondary" 
-                    type="button" 
-                    (click)="togglePasswordVisibility()">
-                    <i class="bi" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  <input [type]="mostrarPassword ? 'text' : 'password'" class="form-control" formControlName="password">
+                  <button class="btn btn-outline-secondary" type="button" (click)="togglePasswordVisibility()">
+                    <i class="bi" [class.bi-eye]="!mostrarPassword" [class.bi-eye-slash]="mostrarPassword"></i>
                   </button>
                 </div>
                 <div class="text-danger small" *ngIf="profesorForm.get('password')?.invalid && profesorForm.get('password')?.touched">
-                  La contraseña debe tener al menos 6 caracteres
+                  {{editando ? 'Mínimo 6 caracteres si cambia' : 'Password requerido (mínimo 6 caracteres)'}}
                 </div>
               </div>
-
-              <!-- ← NUEVO: Campo Checkbox Administrador -->
-              <div class="col-md-6 mb-3 d-flex align-items-end">
-                <div class="form-check form-switch">
-                  <input 
-                    class="form-check-input" 
-                    type="checkbox" 
-                    id="administrador" 
-                    formControlName="administrador"
-                    style="width: 3rem; height: 1.5rem; cursor: pointer;">
-                  <label class="form-check-label ms-2" for="administrador" style="cursor: pointer;">
-                    <strong>¿Es Administrador?</strong>
-                    <br>
-                    <small class="text-muted">Otorga permisos de administrador</small>
+              <div class="col-md-6 mb-3">
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="administrador" formControlName="administrador">
+                  <label class="form-check-label" for="administrador">
+                    <strong>Es Administrador</strong>
                   </label>
+                  <div class="form-text small">Podrá acceder al panel de administración</div>
                 </div>
               </div>
             </div>
-
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary" [disabled]="profesorForm.invalid">
-                <i class="bi bi-check-circle me-1"></i>
+                <i class="bi" [class.bi-save]="!editando" [class.bi-check]="editando"></i>
                 {{editando ? 'Actualizar' : 'Guardar'}}
               </button>
               <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
-                <i class="bi bi-x-circle me-1"></i>
+                <i class="bi bi-x-circle"></i>
                 Cancelar
               </button>
             </div>
@@ -130,8 +123,7 @@
     </div>
   </div>
 
-  <!-- Estadísticas rápidas -->
-  <div class="row mb-4">
+  <div class="row mb-4" *ngIf="!cargando && !mostrarFormulario">
     <div class="col-md-3 mb-3">
       <div class="card text-white bg-primary">
         <div class="card-body">
@@ -156,7 +148,6 @@
         </div>
       </div>
     </div>
-    <!-- ← NUEVO: Card de Administradores -->
     <div class="col-md-3 mb-3">
       <div class="card text-white bg-warning">
         <div class="card-body">
@@ -167,8 +158,7 @@
     </div>
   </div>
 
-  <!-- Tabla de profesores -->
-  <div class="card shadow">
+  <div class="card shadow" *ngIf="!cargando && !mostrarFormulario">
     <div class="card-header bg-white">
       <h5 class="mb-0">Lista de Profesores</h5>
     </div>
@@ -182,7 +172,6 @@
               <th>Email</th>
               <th>Materias</th>
               <th>Cuenta Bancaria</th>
-              <th>Rol</th> <!-- ← NUEVO -->
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -193,6 +182,8 @@
                 <strong>{{profesor.nombre}} {{profesor.apellidos}}</strong>
                 <br>
                 <small class="text-muted">Nac: {{profesor.fecha_nacimiento}}</small>
+                <br>
+                <span *ngIf="profesor.administrador" class="badge bg-danger mt-1">Admin</span>
               </td>
               <td>
                 <span class="badge bg-secondary">{{profesor.alias}}</span>
@@ -201,21 +192,11 @@
               <td>
                 <span *ngFor="let materia of getMateriasArray(profesor.materias_imparte)" 
                       class="badge bg-info me-1 mb-1">
-                  {{materia.trim()}}
+                  {{materia}}
                 </span>
               </td>
               <td>
                 <small class="text-muted">{{profesor.cuenta_bancaria}}</small>
-              </td>
-              <!-- ← NUEVO: Columna de Rol (Administrador o Profesor) -->
-              <td>
-                <span 
-                  class="badge" 
-                  [class.bg-warning]="profesor.administrador" 
-                  [class.bg-secondary]="!profesor.administrador">
-                  <i class="bi" [class.bi-shield-fill-check]="profesor.administrador" [class.bi-person]="!profesor.administrador"></i>
-                  {{profesor.administrador ? 'Admin' : 'Profesor'}}
-                </span>
               </td>
               <td>
                 <span class="badge" [class.bg-success]="profesor.activo" [class.bg-danger]="!profesor.activo">
@@ -245,8 +226,7 @@
         </table>
       </div>
 
-      <!-- Mensaje si no hay profesores -->
-      <div *ngIf="profesores.length === 0" class="text-center py-4">
+      <div *ngIf="profesores.length === 0 && !errorCarga" class="text-center py-4">
         <i class="bi bi-person-badge display-1 text-muted"></i>
         <p class="text-muted mt-3">No hay profesores registrados</p>
         <button class="btn btn-primary" (click)="nuevoProfesor()">

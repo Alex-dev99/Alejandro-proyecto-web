@@ -3,7 +3,6 @@
     <div class="col-md-4 col-sm-8">
       <div class="card shadow">
         <div class="card-header bg-primary text-white text-center py-4">
-          <!-- Logo en el login -->
           <div class="d-flex justify-content-center align-items-center mb-3">
             <img src="../../shared/components/images/logo1.PNG" alt="Logo Academia" class="logo me-3" height="50">
             <div class="text-start">
@@ -16,7 +15,6 @@
         <div class="card-body p-4">
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             
-            <!-- Email -->
             <div class="mb-3">
               <label for="email" class="form-label">Email</label>
               <input
@@ -35,7 +33,6 @@
               </div>
             </div>
 
-            <!-- Password -->
             <div class="mb-3">
               <label for="password" class="form-label">Contraseña</label>
               <input
@@ -54,14 +51,12 @@
               </div>
             </div>
 
-            <!-- Error Message -->
             <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
               <i class="bi bi-exclamation-triangle me-2"></i>
               {{ errorMessage }}
               <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
             </div>
 
-            <!-- Submit Button -->
             <button 
               type="submit" 
               class="btn btn-primary w-100 py-2"
@@ -82,7 +77,6 @@
 
           </form>
 
-          <!-- Demo Credentials -->
           <div class="mt-4 p-3 bg-light rounded">
             <h6 class="text-center mb-2">Credenciales de Demo:</h6>
             <div class="small">

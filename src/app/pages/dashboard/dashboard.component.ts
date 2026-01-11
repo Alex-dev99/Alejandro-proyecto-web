@@ -10,7 +10,6 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent {
-  // Datos de ejemplo - después conectarás con tu API
   stats = [
     { title: 'Total Alumnos', value: '25', icon: 'bi-people', color: 'primary', route: '/admin/alumnos' },
     { title: 'Profesores Activos', value: '8', icon: 'bi-person-badge', color: 'success', route: '/admin/profesores' },

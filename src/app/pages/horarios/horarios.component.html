@@ -1,5 +1,4 @@
 <div class="horarios-container">
-  <!-- Header -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="d-flex justify-content-between align-items-center">
@@ -7,7 +6,7 @@
           <h1>Gestión de Horarios</h1>
           <p class="text-muted">Administra los horarios de clases</p>
         </div>
-        <button class="btn btn-primary" (click)="nuevoHorario()" *ngIf="!mostrarFormulario">
+        <button class="btn btn-primary" (click)="nuevoHorario()" *ngIf="!mostrarFormulario && !cargando">
           <i class="bi bi-calendar-plus me-2"></i>
           Nuevo Horario
         </button>
@@ -15,12 +14,27 @@
     </div>
   </div>
 
-  <!-- Formulario -->
-  <div class="row mb-4" *ngIf="mostrarFormulario">
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-3" *ngIf="cargandoDatos">Cargando datos...</p>
+    <p class="mt-3" *ngIf="!cargandoDatos">Cargando horarios...</p>
+  </div>
+
+  <div *ngIf="errorCarga && !cargando" class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ errorCarga }}
+  </div>
+
+  <div class="row mb-4" *ngIf="mostrarFormulario && !cargando">
     <div class="col-12">
       <div class="card shadow">
-        <div class="card-header bg-white">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
           <h5 class="mb-0">{{editando ? 'Editar Horario' : 'Nuevo Horario'}}</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="cancelarEdicion()">
+            <i class="bi bi-x"></i>
+          </button>
         </div>
         <div class="card-body">
           <form [formGroup]="horarioForm" (ngSubmit)="guardarHorario()">
@@ -33,6 +47,9 @@
                     {{alumno.nombre}} {{alumno.apellidos}}
                   </option>
                 </select>
+                <div class="text-danger small" *ngIf="horarioForm.get('id_alumno')?.invalid && horarioForm.get('id_alumno')?.touched">
+                  Alumno requerido
+                </div>
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label">Profesor *</label>
@@ -42,15 +59,21 @@
                     {{profesor.nombre}} {{profesor.apellidos}}
                   </option>
                 </select>
+                <div class="text-danger small" *ngIf="horarioForm.get('id_profesor')?.invalid && horarioForm.get('id_profesor')?.touched">
+                  Profesor requerido
+                </div>
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label">Aula *</label>
                 <select class="form-select" formControlName="id_aula">
                   <option value="">Seleccionar aula</option>
                   <option *ngFor="let aula of aulas" [value]="aula.id_aula">
-                    {{aula.nombre}}
+                    {{aula.nombre}} ({{aula.capacidad}} alumnos)
                   </option>
                 </select>
+                <div class="text-danger small" *ngIf="horarioForm.get('id_aula')?.invalid && horarioForm.get('id_aula')?.touched">
+                  Aula requerida
+                </div>
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label">Día de la semana *</label>
@@ -70,9 +93,11 @@
             </div>
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary" [disabled]="horarioForm.invalid">
+                <i class="bi" [class.bi-save]="!editando" [class.bi-check]="editando"></i>
                 {{editando ? 'Actualizar' : 'Guardar'}}
               </button>
               <button type="button" class="btn btn-secondary" (click)="cancelarEdicion()">
+                <i class="bi bi-x-circle"></i>
                 Cancelar
               </button>
             </div>
@@ -82,8 +107,7 @@
     </div>
   </div>
 
-  <!-- Estadísticas rápidas -->
-  <div class="row mb-4">
+  <div class="row mb-4" *ngIf="!cargando && !mostrarFormulario">
     <div class="col-md-3 mb-3">
       <div class="card text-white bg-primary">
         <div class="card-body">
@@ -102,25 +126,24 @@
     </div>
   </div>
 
-  <!-- Vista semanal -->
-  <div class="card shadow mb-4">
+  <div class="card shadow mb-4" *ngIf="!cargando && !mostrarFormulario">
     <div class="card-header bg-white">
       <h5 class="mb-0">Vista Semanal</h5>
     </div>
     <div class="card-body">
       <div class="row">
         <div class="col-md-2 mb-3" *ngFor="let dia of diasSemana">
-          <div class="card">
-            <div class="card-header text-center py-2">
+          <div class="card h-100">
+            <div class="card-header text-center py-2 bg-info text-white">
               <strong>{{dia}}</strong>
             </div>
             <div class="card-body p-2">
               <div *ngFor="let horario of getHorariosPorDia(dia)" 
-                   class="horario-item mb-2 p-2 border rounded">
-                <small class="d-block fw-bold">{{getNombreAlumno(horario.id_alumno)}}</small>
-                <small class="d-block text-muted">{{getNombreProfesor(horario.id_profesor)}}</small>
-                <small class="d-block">{{horario.hora_inicio}} - {{horario.hora_fin}}</small>
-                <small class="d-block badge bg-secondary">{{getNombreAula(horario.id_aula)}}</small>
+                   class="horario-item mb-2 p-2 border rounded bg-light">
+                <small class="d-block fw-bold">{{horario.alumno_nombre || getNombreCompletoAlumno(horario.id_alumno)}}</small>
+                <small class="d-block text-muted">{{horario.profesor_nombre || getNombreCompletoProfesor(horario.id_profesor)}}</small>
+                <small class="d-block">{{formatearHora(horario.hora_inicio)}} - {{formatearHora(horario.hora_fin)}}</small>
+                <small class="d-block badge bg-secondary">{{horario.aula_nombre || getNombreAula(horario.id_aula)}}</small>
               </div>
               <div *ngIf="getHorariosPorDia(dia).length === 0" class="text-center text-muted py-2">
                 <small>Sin clases</small>
@@ -132,8 +155,7 @@
     </div>
   </div>
 
-  <!-- Lista completa de horarios -->
-  <div class="card shadow">
+  <div class="card shadow" *ngIf="!cargando && !mostrarFormulario">
     <div class="card-header bg-white">
       <h5 class="mb-0">Lista Completa de Horarios</h5>
     </div>
@@ -147,21 +169,27 @@
               <th>Aula</th>
               <th>Día</th>
               <th>Horario</th>
+              <th>Fecha Creación</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let horario of horarios">
-              <td>{{getNombreAlumno(horario.id_alumno)}}</td>
-              <td>{{getNombreProfesor(horario.id_profesor)}}</td>
               <td>
-                <span class="badge bg-secondary">{{getNombreAula(horario.id_aula)}}</span>
+                <strong>{{horario.alumno_nombre || getNombreCompletoAlumno(horario.id_alumno)}}</strong>
+              </td>
+              <td>{{horario.profesor_nombre || getNombreCompletoProfesor(horario.id_profesor)}}</td>
+              <td>
+                <span class="badge bg-secondary">{{horario.aula_nombre || getNombreAula(horario.id_aula)}}</span>
               </td>
               <td>
                 <span class="badge bg-info">{{horario.dia_semana}}</span>
               </td>
               <td>
-                <strong>{{horario.hora_inicio}} - {{horario.hora_fin}}</strong>
+                <strong>{{formatearHora(horario.hora_inicio)}} - {{formatearHora(horario.hora_fin)}}</strong>
+              </td>
+              <td>
+                <small class="text-muted">{{horario.fecha_creacion}}</small>
               </td>
               <td>
                 <div class="btn-group btn-group-sm">
@@ -178,8 +206,7 @@
         </table>
       </div>
 
-      <!-- Mensaje si no hay horarios -->
-      <div *ngIf="horarios.length === 0" class="text-center py-4">
+      <div *ngIf="horarios.length === 0 && !errorCarga" class="text-center py-4">
         <i class="bi bi-calendar display-1 text-muted"></i>
         <p class="text-muted mt-3">No hay horarios registrados</p>
         <button class="btn btn-primary" (click)="nuevoHorario()">

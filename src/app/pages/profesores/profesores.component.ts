@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 
 interface Profesor {
   id_profesor: number;
@@ -13,8 +14,8 @@ interface Profesor {
   email: string;
   cuenta_bancaria: string;
   activo: boolean;
-  administrador: boolean; 
-  password: string;         
+  administrador: boolean;
+  password: string;
 }
 
 @Component({
@@ -24,45 +25,22 @@ interface Profesor {
   templateUrl: './profesores.component.html',
   styleUrls: ['./profesores.component.css']
 })
-export class ProfesoresComponent {
-  profesores: Profesor[] = [
-    {
-      id_profesor: 1,
-      nombre: 'María',
-      apellidos: 'García López',
-      alias: 'María',
-      fecha_nacimiento: '1985-03-15',
-      materias_imparte: 'Matemáticas,Física',
-      email: 'maria@academia.com',
-      cuenta_bancaria: 'ES9121000418450200051332',
-      activo: true,
-      administrador: true,     
-      password: 'hashed_pass_1' 
-    },
-    {
-      id_profesor: 2,
-      nombre: 'Carlos',
-      apellidos: 'Martínez Ruiz',
-      alias: 'Carlos',
-      fecha_nacimiento: '1990-07-22',
-      materias_imparte: 'Inglés,Francés',
-      email: 'carlos@academia.com',
-      cuenta_bancaria: 'ES7921000813530200051332',
-      activo: true,
-      administrador: false,     
-      password: 'hashed_pass_2' 
-    }
-  ];
-
+export class ProfesoresComponent implements OnInit {
+  profesores: Profesor[] = [];
   profesorForm: FormGroup;
   editando = false;
   profesorEditando: Profesor | null = null;
   mostrarFormulario = false;
-  mostrarPassword = false; 
+  mostrarPassword = false;
+  cargando = false;
+  errorCarga = '';
 
   materias = ['Matemáticas', 'Inglés', 'Francés', 'Física', 'Química', 'Lengua', 'Historia', 'Biología'];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService
+  ) {
     this.profesorForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       apellidos: ['', [Validators.required]],
@@ -71,12 +49,15 @@ export class ProfesoresComponent {
       materias_imparte: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       cuenta_bancaria: ['', [Validators.required, Validators.minLength(20)]],
-      administrador: [false],  
-      password: ['', [Validators.required, Validators.minLength(6)]]  
+      administrador: [false],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  // Propiedades calculadas
+  ngOnInit(): void {
+    this.cargarProfesores();
+  }
+
   get totalProfesores(): number {
     return this.profesores.length;
   }
@@ -90,20 +71,66 @@ export class ProfesoresComponent {
     return new Set(todasMaterias).size;
   }
 
-  
   get profesoresAdministradores(): number {
     return this.profesores.filter(p => p.administrador).length;
   }
 
-  
+  cargarProfesores(): void {
+    this.cargando = true;
+    this.errorCarga = '';
+    
+    this.apiService.getProfesores().subscribe({
+      next: (data) => {
+        this.profesores = data;
+        this.cargando = false;
+      },
+      error: (error) => {
+        console.error('Error cargando profesores:', error);
+        this.errorCarga = 'Error al cargar los profesores. Usando datos de ejemplo.';
+        this.profesores = this.getDatosEjemplo();
+        this.cargando = false;
+      }
+    });
+  }
+
+  private getDatosEjemplo(): Profesor[] {
+    return [
+      {
+        id_profesor: 1,
+        nombre: 'María',
+        apellidos: 'García López',
+        alias: 'María',
+        fecha_nacimiento: '1985-03-15',
+        materias_imparte: 'Matemáticas,Física',
+        email: 'maria@academia.com',
+        cuenta_bancaria: 'ES9121000418450200051332',
+        activo: true,
+        administrador: true,
+        password: 'hashed_pass_1'
+      },
+      {
+        id_profesor: 2,
+        nombre: 'Carlos',
+        apellidos: 'Martínez Ruiz',
+        alias: 'Carlos',
+        fecha_nacimiento: '1990-07-22',
+        materias_imparte: 'Inglés,Francés',
+        email: 'carlos@academia.com',
+        cuenta_bancaria: 'ES7921000813530200051332',
+        activo: true,
+        administrador: false,
+        password: 'hashed_pass_2'
+      }
+    ];
+  }
+
   nuevoProfesor(): void {
     this.editando = false;
     this.profesorEditando = null;
-    this.profesorForm.reset({ administrador: false }); // Reset con valor por defecto
+    this.profesorForm.reset({ administrador: false });
     this.mostrarFormulario = true;
     this.mostrarPassword = false;
     
-    // Password es obligatorio al crear
     this.profesorForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.profesorForm.get('password')?.updateValueAndValidity();
   }
@@ -119,19 +146,17 @@ export class ProfesoresComponent {
       materias_imparte: profesor.materias_imparte,
       email: profesor.email,
       cuenta_bancaria: profesor.cuenta_bancaria,
-      administrador: profesor.administrador,  // ← NUEVO
-      password: ''  // ← NUEVO: no mostramos el password actual por seguridad
+      administrador: profesor.administrador,
+      password: ''
     });
     this.mostrarFormulario = true;
     this.mostrarPassword = false;
     
-    // ← NUEVO: Password es opcional al editar
     this.profesorForm.get('password')?.clearValidators();
     this.profesorForm.get('password')?.setValidators([Validators.minLength(6)]);
     this.profesorForm.get('password')?.updateValueAndValidity();
   }
 
-  // ← NUEVO: Toggle para mostrar/ocultar password
   togglePasswordVisibility(): void {
     this.mostrarPassword = !this.mostrarPassword;
   }
@@ -139,35 +164,50 @@ export class ProfesoresComponent {
   guardarProfesor(): void {
     if (this.profesorForm.valid) {
       const profesorData = this.profesorForm.value;
-
+      
       if (this.editando && this.profesorEditando) {
-        // Actualizar profesor existente
-        const index = this.profesores.findIndex(p => p.id_profesor === this.profesorEditando!.id_profesor);
-        
-        // ← NUEVO: Si el password está vacío al editar, mantener el anterior
-        if (!profesorData.password) {
-          profesorData.password = this.profesorEditando.password;
-        }
-        
-        this.profesores[index] = {
-          ...this.profesorEditando,
-          ...profesorData
-        };
+        this.apiService.updateProfesor(this.profesorEditando.id_profesor, profesorData)
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.cargarProfesores(); 
+                this.cancelarEdicion();
+              } else {
+                alert('Error al actualizar: ' + response.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error actualizando profesor:', error);
+              alert('Error al actualizar profesor. Ver consola para detalles.');
+            }
+          });
       } else {
-        // Crear nuevo profesor
         const nuevoProfesor: Profesor = {
-          id_profesor: Math.max(...this.profesores.map(p => p.id_profesor)) + 1,
+          id_profesor: 0, 
           ...profesorData,
           activo: true
         };
         
-        // ⚠️ IMPORTANTE: En producción, aquí deberías hashear el password antes de guardarlo
-        // Ejemplo: nuevoProfesor.password = await bcrypt.hash(profesorData.password, 10);
-        
-        this.profesores.push(nuevoProfesor);
+        this.apiService.createProfesor(nuevoProfesor)
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.cargarProfesores(); 
+                this.cancelarEdicion();
+              } else {
+                alert('Error al crear: ' + response.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error creando profesor:', error);
+              alert('Error al crear profesor. Ver consola para detalles.');
+            }
+          });
       }
-
-      this.cancelarEdicion();
+    } else {
+      Object.keys(this.profesorForm.controls).forEach(key => {
+        this.profesorForm.get(key)?.markAsTouched();
+      });
     }
   }
 
@@ -180,17 +220,44 @@ export class ProfesoresComponent {
   }
 
   toggleActivo(profesor: Profesor): void {
-    profesor.activo = !profesor.activo;
+    const profesorActualizado = { ...profesor, activo: !profesor.activo };
+    
+    this.apiService.updateProfesor(profesor.id_profesor, profesorActualizado)
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            profesor.activo = !profesor.activo;
+          } else {
+            alert('Error al cambiar estado: ' + response.message);
+          }
+        },
+        error: (error) => {
+          console.error('Error cambiando estado:', error);
+          alert('Error al cambiar estado del profesor');
+        }
+      });
   }
 
   eliminarProfesor(id: number): void {
     if (confirm('¿Estás seguro de eliminar este profesor?')) {
-      this.profesores = this.profesores.filter(p => p.id_profesor !== id);
+      this.apiService.deleteProfesor(id)
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.cargarProfesores(); 
+            } else {
+              alert('Error al eliminar: ' + response.message);
+            }
+          },
+          error: (error) => {
+            console.error('Error eliminando profesor:', error);
+            alert('Error al eliminar profesor. Ver consola para detalles.');
+          }
+        });
     }
   }
 
-  // Helper para mostrar materias como badges
   getMateriasArray(materias: string): string[] {
-    return materias.split(',');
+    return materias.split(',').map(m => m.trim());
   }
 }

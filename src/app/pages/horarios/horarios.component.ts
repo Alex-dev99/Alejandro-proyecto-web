@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 
 interface Horario {
   id_horario: number;
@@ -12,6 +13,9 @@ interface Horario {
   hora_inicio: string;
   hora_fin: string;
   fecha_creacion: string;
+  alumno_nombre?: string;
+  profesor_nombre?: string;
+  aula_nombre?: string;
 }
 
 interface Alumno {
@@ -29,6 +33,7 @@ interface Profesor {
 interface Aula {
   id_aula: number;
   nombre: string;
+  capacidad: number;
 }
 
 @Component({
@@ -38,66 +43,26 @@ interface Aula {
   templateUrl: './horarios.component.html',
   styleUrls: ['./horarios.component.css']
 })
-export class HorariosComponent {
-  // Datos de ejemplo
-  alumnos: Alumno[] = [
-    { id_alumno: 1, nombre: 'Ana', apellidos: 'Sánchez Pérez' },
-    { id_alumno: 2, nombre: 'Luis', apellidos: 'Fernández Gómez' },
-    { id_alumno: 3, nombre: 'María', apellidos: 'Rodríguez López' }
-  ];
-
-  profesores: Profesor[] = [
-    { id_profesor: 1, nombre: 'María', apellidos: 'García López' },
-    { id_profesor: 2, nombre: 'Carlos', apellidos: 'Martínez Ruiz' }
-  ];
-
-  aulas: Aula[] = [
-    { id_aula: 1, nombre: 'Aula 1' },
-    { id_aula: 2, nombre: 'Aula 2' },
-    { id_aula: 3, nombre: 'Aula 3' }
-  ];
-
-  horarios: Horario[] = [
-    {
-      id_horario: 1,
-      id_alumno: 1,
-      id_profesor: 1,
-      id_aula: 1,
-      dia_semana: 'Lunes',
-      hora_inicio: '16:00',
-      hora_fin: '17:00',
-      fecha_creacion: '2024-01-15'
-    },
-    {
-      id_horario: 2,
-      id_alumno: 1,
-      id_profesor: 1,
-      id_aula: 1,
-      dia_semana: 'Miércoles',
-      hora_inicio: '16:00',
-      hora_fin: '17:00',
-      fecha_creacion: '2024-01-15'
-    },
-    {
-      id_horario: 3,
-      id_alumno: 2,
-      id_profesor: 2,
-      id_aula: 2,
-      dia_semana: 'Martes',
-      hora_inicio: '17:30',
-      hora_fin: '18:30',
-      fecha_creacion: '2024-01-14'
-    }
-  ];
-
+export class HorariosComponent implements OnInit {
+  horarios: Horario[] = [];
+  alumnos: Alumno[] = [];
+  profesores: Profesor[] = [];
+  aulas: Aula[] = [];
+  
   horarioForm: FormGroup;
   editando = false;
   horarioEditando: Horario | null = null;
   mostrarFormulario = false;
+  cargando = false;
+  errorCarga = '';
+  cargandoDatos = false;
 
   diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService
+  ) {
     this.horarioForm = this.fb.group({
       id_alumno: ['', [Validators.required]],
       id_profesor: ['', [Validators.required]],
@@ -108,22 +73,147 @@ export class HorariosComponent {
     });
   }
 
-  // Propiedades calculadas
+  ngOnInit(): void {
+    this.cargarTodosDatos();
+  }
+
   get totalHorarios(): number {
     return this.horarios.length;
   }
 
   get horariosEstaSemana(): number {
-    return this.horarios.length; // Simplificado para el ejemplo
+    return this.horarios.length; 
   }
 
-  // Helper methods
-  getNombreAlumno(id: number): string {
+  cargarTodosDatos(): void {
+    this.cargando = true;
+    this.cargandoDatos = true;
+    
+    this.apiService.getHorarios().subscribe({
+      next: (data) => {
+        this.horarios = data;
+        this.cargarDatosRelacionados();
+      },
+      error: (error) => {
+        console.error('Error cargando horarios:', error);
+        this.errorCarga = 'Error al cargar los horarios. Usando datos de ejemplo.';
+        this.horarios = this.getHorariosEjemplo();
+        this.cargando = false;
+        this.cargandoDatos = false;
+      }
+    });
+  }
+
+  cargarDatosRelacionados(): void {
+    this.apiService.getAlumnos().subscribe({
+      next: (alumnosData) => {
+        this.alumnos = alumnosData.map((a: any) => ({
+          id_alumno: a.id_alumno,
+          nombre: a.nombre,
+          apellidos: a.apellidos
+        }));
+        
+        this.apiService.getProfesores().subscribe({
+          next: (profesoresData) => {
+            this.profesores = profesoresData.map((p: any) => ({
+              id_profesor: p.id_profesor,
+              nombre: p.nombre,
+              apellidos: p.apellidos
+            }));
+            
+            this.apiService.getAulas().subscribe({
+              next: (aulasData) => {
+                this.aulas = aulasData;
+                this.cargando = false;
+                this.cargandoDatos = false;
+              },
+              error: (error) => {
+                console.error('Error cargando aulas:', error);
+                this.aulas = this.getAulasEjemplo();
+                this.cargando = false;
+                this.cargandoDatos = false;
+              }
+            });
+          },
+          error: (error) => {
+            console.error('Error cargando profesores:', error);
+            this.profesores = this.getProfesoresEjemplo();
+            this.aulas = this.getAulasEjemplo();
+            this.cargando = false;
+            this.cargandoDatos = false;
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error cargando alumnos:', error);
+        this.alumnos = this.getAlumnosEjemplo();
+        this.profesores = this.getProfesoresEjemplo();
+        this.aulas = this.getAulasEjemplo();
+        this.cargando = false;
+        this.cargandoDatos = false;
+      }
+    });
+  }
+
+  private getHorariosEjemplo(): Horario[] {
+    return [
+      {
+        id_horario: 1,
+        id_alumno: 1,
+        id_profesor: 1,
+        id_aula: 1,
+        dia_semana: 'Lunes',
+        hora_inicio: '16:00',
+        hora_fin: '17:00',
+        fecha_creacion: '2024-01-15',
+        alumno_nombre: 'Ana Sánchez',
+        profesor_nombre: 'María García',
+        aula_nombre: 'Aula 1'
+      },
+      {
+        id_horario: 2,
+        id_alumno: 2,
+        id_profesor: 2,
+        id_aula: 2,
+        dia_semana: 'Martes',
+        hora_inicio: '17:30',
+        hora_fin: '18:30',
+        fecha_creacion: '2024-01-14',
+        alumno_nombre: 'Luis Fernández',
+        profesor_nombre: 'Carlos Martínez',
+        aula_nombre: 'Aula 2'
+      }
+    ];
+  }
+
+  private getAlumnosEjemplo(): Alumno[] {
+    return [
+      { id_alumno: 1, nombre: 'Ana', apellidos: 'Sánchez Pérez' },
+      { id_alumno: 2, nombre: 'Luis', apellidos: 'Fernández Gómez' }
+    ];
+  }
+
+  private getProfesoresEjemplo(): Profesor[] {
+    return [
+      { id_profesor: 1, nombre: 'María', apellidos: 'García López' },
+      { id_profesor: 2, nombre: 'Carlos', apellidos: 'Martínez Ruiz' }
+    ];
+  }
+
+  private getAulasEjemplo(): Aula[] {
+    return [
+      { id_aula: 1, nombre: 'Aula 1', capacidad: 5 },
+      { id_aula: 2, nombre: 'Aula 2', capacidad: 4 },
+      { id_aula: 3, nombre: 'Aula 3', capacidad: 6 }
+    ];
+  }
+
+  getNombreCompletoAlumno(id: number): string {
     const alumno = this.alumnos.find(a => a.id_alumno === id);
     return alumno ? `${alumno.nombre} ${alumno.apellidos}` : 'N/A';
   }
 
-  getNombreProfesor(id: number): string {
+  getNombreCompletoProfesor(id: number): string {
     const profesor = this.profesores.find(p => p.id_profesor === id);
     return profesor ? `${profesor.nombre} ${profesor.apellidos}` : 'N/A';
   }
@@ -133,7 +223,6 @@ export class HorariosComponent {
     return aula ? aula.nombre : 'N/A';
   }
 
-  // CRUD Operations
   nuevoHorario(): void {
     this.editando = false;
     this.horarioEditando = null;
@@ -158,25 +247,44 @@ export class HorariosComponent {
   guardarHorario(): void {
     if (this.horarioForm.valid) {
       const horarioData = this.horarioForm.value;
-
+      
       if (this.editando && this.horarioEditando) {
-        // Actualizar horario existente
-        const index = this.horarios.findIndex(h => h.id_horario === this.horarioEditando!.id_horario);
-        this.horarios[index] = {
-          ...this.horarioEditando,
-          ...horarioData
-        };
+        this.apiService.updateHorario(this.horarioEditando.id_horario, horarioData)
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.cargarTodosDatos(); 
+                this.cancelarEdicion();
+              } else {
+                alert('Error al actualizar: ' + response.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error actualizando horario:', error);
+              alert('Error al actualizar horario. Ver consola para detalles.');
+            }
+          });
       } else {
-        // Crear nuevo horario
-        const nuevoHorario: Horario = {
-          id_horario: Math.max(...this.horarios.map(h => h.id_horario)) + 1,
-          ...horarioData,
-          fecha_creacion: new Date().toISOString().split('T')[0]
-        };
-        this.horarios.push(nuevoHorario);
+        this.apiService.createHorario(horarioData)
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.cargarTodosDatos(); 
+                this.cancelarEdicion();
+              } else {
+                alert('Error al crear: ' + response.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error creando horario:', error);
+              alert('Error al crear horario. Ver consola para detalles.');
+            }
+          });
       }
-
-      this.cancelarEdicion();
+    } else {
+      Object.keys(this.horarioForm.controls).forEach(key => {
+        this.horarioForm.get(key)?.markAsTouched();
+      });
     }
   }
 
@@ -189,12 +297,28 @@ export class HorariosComponent {
 
   eliminarHorario(id: number): void {
     if (confirm('¿Estás seguro de eliminar este horario?')) {
-      this.horarios = this.horarios.filter(h => h.id_horario !== id);
+      this.apiService.deleteHorario(id)
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.cargarTodosDatos(); 
+            } else {
+              alert('Error al eliminar: ' + response.message);
+            }
+          },
+          error: (error) => {
+            console.error('Error eliminando horario:', error);
+            alert('Error al eliminar horario. Ver consola para detalles.');
+          }
+        });
     }
   }
 
-  // Vista semanal simplificada
   getHorariosPorDia(dia: string): Horario[] {
     return this.horarios.filter(h => h.dia_semana === dia);
+  }
+
+  formatearHora(hora: string): string {
+    return hora.substring(0, 5);
   }
 }

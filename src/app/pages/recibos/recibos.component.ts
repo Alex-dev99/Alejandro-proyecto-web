@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 
 interface Recibo {
   id_recibo: number;
@@ -11,6 +12,7 @@ interface Recibo {
   estado: 'PENDIENTE' | 'PAGADO';
   fecha_emision: string;
   fecha_pago: string | null;
+  alumno_nombre?: string; 
 }
 
 interface Alumno {
@@ -27,56 +29,27 @@ interface Alumno {
   templateUrl: './recibos.component.html',
   styleUrls: ['./recibos.component.css']
 })
-export class RecibosComponent {
-  // Datos de ejemplo
-  alumnos: Alumno[] = [
-    { id_alumno: 1, nombre: 'Ana', apellidos: 'Sánchez Pérez', cuota_mensual: 120.00 },
-    { id_alumno: 2, nombre: 'Luis', apellidos: 'Fernández Gómez', cuota_mensual: 100.00 },
-    { id_alumno: 3, nombre: 'María', apellidos: 'Rodríguez López', cuota_mensual: 110.00 }
-  ];
-
-  recibos: Recibo[] = [
-    {
-      id_recibo: 1,
-      id_alumno: 1,
-      mes: 'Noviembre 2024',
-      importe: 120.00,
-      estado: 'PAGADO',
-      fecha_emision: '2024-11-01',
-      fecha_pago: '2024-11-05'
-    },
-    {
-      id_recibo: 2,
-      id_alumno: 1,
-      mes: 'Diciembre 2024',
-      importe: 120.00,
-      estado: 'PENDIENTE',
-      fecha_emision: '2024-12-01',
-      fecha_pago: null
-    },
-    {
-      id_recibo: 3,
-      id_alumno: 2,
-      mes: 'Noviembre 2024',
-      importe: 100.00,
-      estado: 'PAGADO',
-      fecha_emision: '2024-11-01',
-      fecha_pago: '2024-11-06'
-    }
-  ];
-
+export class RecibosComponent implements OnInit {
+  recibos: Recibo[] = [];
+  alumnos: Alumno[] = [];
   reciboForm: FormGroup;
   editando = false;
   reciboEditando: Recibo | null = null;
   mostrarFormulario = false;
+  cargando = false;
+  errorCarga = '';
 
   meses = [
-    'Enero 2024', 'Febrero 2024', 'Marzo 2024', 'Abril 2024', 
-    'Mayo 2024', 'Junio 2024', 'Julio 2024', 'Agosto 2024',
-    'Septiembre 2024', 'Octubre 2024', 'Noviembre 2024', 'Diciembre 2024'
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
+  anos = ['2024', '2025', '2026'];
+  estados = ['PENDIENTE', 'PAGADO'];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService
+  ) {
     this.reciboForm = this.fb.group({
       id_alumno: ['', [Validators.required]],
       mes: ['', [Validators.required]],
@@ -85,7 +58,72 @@ export class RecibosComponent {
     });
   }
 
-  // Propiedades calculadas
+  ngOnInit(): void {
+    this.cargarDatos();
+  }
+
+  cargarDatos(): void {
+    this.cargando = true;
+    this.errorCarga = '';
+    
+    this.apiService.getRecibos().subscribe({
+      next: (recibosData) => {
+        this.recibos = recibosData;
+        
+        this.apiService.getAlumnos().subscribe({
+          next: (alumnosData) => {
+            this.alumnos = alumnosData.filter((a: any) => a.activo);
+            this.cargando = false;
+          },
+          error: (alumnoError) => {
+            console.error('Error cargando alumnos:', alumnoError);
+            this.alumnos = [];
+            this.cargando = false;
+          }
+        });
+      },
+      error: (reciboError) => {
+        console.error('Error cargando recibos:', reciboError);
+        this.errorCarga = 'Error al cargar los recibos. Usando datos de ejemplo.';
+        this.recibos = this.getDatosEjemplo();
+        this.alumnos = this.getAlumnosEjemplo();
+        this.cargando = false;
+      }
+    });
+  }
+
+  private getDatosEjemplo(): Recibo[] {
+    return [
+      {
+        id_recibo: 1,
+        id_alumno: 1,
+        mes: 'Noviembre 2024',
+        importe: 120.00,
+        estado: 'PAGADO',
+        fecha_emision: '2024-11-01',
+        fecha_pago: '2024-11-05 10:30:00',
+        alumno_nombre: 'Ana Sánchez'
+      },
+      {
+        id_recibo: 2,
+        id_alumno: 1,
+        mes: 'Diciembre 2024',
+        importe: 120.00,
+        estado: 'PENDIENTE',
+        fecha_emision: '2024-12-01',
+        fecha_pago: null,
+        alumno_nombre: 'Ana Sánchez'
+      }
+    ];
+  }
+
+  private getAlumnosEjemplo(): Alumno[] {
+    return [
+      { id_alumno: 1, nombre: 'Ana', apellidos: 'Sánchez Pérez', cuota_mensual: 120.00 },
+      { id_alumno: 2, nombre: 'Luis', apellidos: 'Fernández Gómez', cuota_mensual: 100.00 }
+    ];
+  }
+
   get totalRecibos(): number {
     return this.recibos.length;
   }
@@ -106,10 +144,9 @@ export class RecibosComponent {
       .reduce((total, recibo) => total + recibo.importe, 0);
   }
 
-  // Helper methods
   getNombreAlumno(id: number): string {
     const alumno = this.alumnos.find(a => a.id_alumno === id);
-    return alumno ? `${alumno.nombre} ${alumno.apellidos}` : 'N/A';
+    return alumno ? `${alumno.nombre} ${alumno.apellidos}` : `Alumno #${id}`;
   }
 
   getCuotaAlumno(id: number): number {
@@ -117,7 +154,16 @@ export class RecibosComponent {
     return alumno ? alumno.cuota_mensual : 0;
   }
 
-  // CRUD Operations
+  getMesesCompletos(): string[] {
+    const mesesCompletos: string[] = [];
+    this.anos.forEach(ano => {
+      this.meses.forEach(mes => {
+        mesesCompletos.push(`${mes} ${ano}`);
+      });
+    });
+    return mesesCompletos;
+  }
+
   nuevoRecibo(): void {
     this.editando = false;
     this.reciboEditando = null;
@@ -137,30 +183,92 @@ export class RecibosComponent {
     this.mostrarFormulario = true;
   }
 
+  onAlumnoChange(): void {
+    const alumnoId = this.reciboForm.get('id_alumno')?.value;
+    if (alumnoId && !this.editando) {
+      const cuota = this.getCuotaAlumno(alumnoId);
+      if (cuota > 0) {
+        this.reciboForm.patchValue({ importe: cuota });
+      }
+    }
+  }
+
+  marcarComoPagado(recibo: Recibo): void {
+    if (confirm('¿Marcar este recibo como pagado?')) {
+      const reciboActualizado = { 
+        ...recibo, 
+        estado: 'PAGADO',
+        fecha_pago: new Date().toISOString()
+      };
+      
+      this.apiService.updateRecibo(recibo.id_recibo, reciboActualizado)
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
+              recibo.estado = 'PAGADO';
+              recibo.fecha_pago = reciboActualizado.fecha_pago;
+              this.cargarDatos(); 
+            } else {
+              alert('Error al marcar como pagado: ' + response.message);
+            }
+          },
+          error: (error) => {
+            console.error('Error marcando como pagado:', error);
+            alert('Error al marcar recibo como pagado');
+          }
+        });
+    }
+  }
+
   guardarRecibo(): void {
     if (this.reciboForm.valid) {
       const reciboData = this.reciboForm.value;
 
       if (this.editando && this.reciboEditando) {
-        // Actualizar recibo existente
-        const index = this.recibos.findIndex(r => r.id_recibo === this.reciboEditando!.id_recibo);
-        this.recibos[index] = {
-          ...this.reciboEditando,
-          ...reciboData,
-          fecha_pago: reciboData.estado === 'PAGADO' ? new Date().toISOString().split('T')[0] : null
-        };
+        this.apiService.updateRecibo(this.reciboEditando.id_recibo, reciboData)
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.cargarDatos(); 
+                this.cancelarEdicion();
+              } else {
+                alert('Error al actualizar: ' + response.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error actualizando recibo:', error);
+              alert('Error al actualizar recibo. Ver consola para detalles.');
+            }
+          });
       } else {
-        // Crear nuevo recibo
         const nuevoRecibo: Recibo = {
-          id_recibo: Math.max(...this.recibos.map(r => r.id_recibo)) + 1,
+          id_recibo: 0, 
           ...reciboData,
           fecha_emision: new Date().toISOString().split('T')[0],
-          fecha_pago: reciboData.estado === 'PAGADO' ? new Date().toISOString().split('T')[0] : null
+          fecha_pago: reciboData.estado === 'PAGADO' ? new Date().toISOString() : null,
+          alumno_nombre: this.getNombreAlumno(reciboData.id_alumno)
         };
-        this.recibos.push(nuevoRecibo);
+        
+        this.apiService.createRecibo(nuevoRecibo)
+          .subscribe({
+            next: (response) => {
+              if (response.success) {
+                this.cargarDatos(); 
+                this.cancelarEdicion();
+              } else {
+                alert('Error al crear: ' + response.message);
+              }
+            },
+            error: (error) => {
+              console.error('Error creando recibo:', error);
+              alert('Error al crear recibo. Ver consola para detalles.');
+            }
+          });
       }
-
-      this.cancelarEdicion();
+    } else {
+      Object.keys(this.reciboForm.controls).forEach(key => {
+        this.reciboForm.get(key)?.markAsTouched();
+      });
     }
   }
 
@@ -171,25 +279,26 @@ export class RecibosComponent {
     this.reciboForm.reset({ estado: 'PENDIENTE' });
   }
 
-  marcarComoPagado(recibo: Recibo): void {
-    if (confirm('¿Marcar este recibo como pagado?')) {
-      recibo.estado = 'PAGADO';
-      recibo.fecha_pago = new Date().toISOString().split('T')[0];
-    }
-  }
-
   eliminarRecibo(id: number): void {
     if (confirm('¿Estás seguro de eliminar este recibo?')) {
-      this.recibos = this.recibos.filter(r => r.id_recibo !== id);
+      this.apiService.deleteRecibo(id)
+        .subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.cargarDatos(); 
+            } else {
+              alert('Error al eliminar: ' + response.message);
+            }
+          },
+          error: (error) => {
+            console.error('Error eliminando recibo:', error);
+            alert('Error al eliminar recibo. Ver consola para detalles.');
+          }
+        });
     }
   }
 
-  // Auto-completar importe cuando se selecciona alumno
-  onAlumnoChange(): void {
-    const alumnoId = this.reciboForm.get('id_alumno')?.value;
-    if (alumnoId && !this.editando) {
-      const cuota = this.getCuotaAlumno(alumnoId);
-      this.reciboForm.patchValue({ importe: cuota });
-    }
+  getRecibosPorEstado(estado: string): Recibo[] {
+    return this.recibos.filter(r => r.estado === estado);
   }
 }
