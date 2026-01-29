@@ -53,7 +53,7 @@
 
             <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
               <i class="bi bi-exclamation-triangle me-2"></i>
-              {{ errorMessage }}
+              <span style="white-space: pre-line">{{ errorMessage }}</span>
               <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
             </div>
 
@@ -80,8 +80,8 @@
           <div class="mt-4 p-3 bg-light rounded">
             <h6 class="text-center mb-2">Credenciales de Demo:</h6>
             <div class="small">
-              <strong>Email:</strong> admin@academia.com<br>
-              <strong>Password:</strong> admin123
+              <strong>Email:</strong> alex@academia.com<br>
+              <strong>Password:</strong> alexandro
             </div>
           </div>
         </div>

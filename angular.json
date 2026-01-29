@@ -13,31 +13,25 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/Alejandro-Proyecto-web", 
+            "outputPath": "dist/Alejandro-Proyecto-web/browser",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "polyfills": [
-              "src/polyfills.ts",
-              "src/polyfills.server.ts"
-            ],  
+            "polyfills": ["src/polyfills.ts"],
             "assets": [
               {
                 "glob": "**/*",
                 "input": "src/app/shared",
                 "output": "/shared"
+              },
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "scripts": [
- 
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "styles": ["src/styles.css"],
+            "scripts": [],
+            "outputMode": "static"
           },
           "configurations": {
             "production": {
@@ -88,9 +82,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ]
+            "styles": ["src/styles.css"]
           }
         }
       }

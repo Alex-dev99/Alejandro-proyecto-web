@@ -63,6 +63,7 @@ CREATE TABLE recibos (
 );
 
 INSERT INTO profesores (nombre, apellidos, alias, fecha_nacimiento, materias_imparte, email, cuenta_bancaria, administrador, password) VALUES 
+('Alejandor', 'Rodríguez Arias', 'Alex', '2004-07-09', 'Informática', 'alex@academia.com', 'ES9121000418450200051332', 1, 'alexandro'),
 ('María', 'García López', 'María', '1985-03-15', 'Matemáticas,Física', 'maria@academia.com', 'ES9121000418450200051332', 1, 'hashed_pass_1'),
 ('Carlos', 'Martínez Ruiz', 'Carlos', '1990-07-22', 'Inglés,Francés', 'carlos@academia.com', 'ES7921000813530200051332', 0, 'hashed_pass_2');
 
