@@ -8,12 +8,14 @@
     </div>
     
     <div class="topbar-right">
-      <div class="dropdown">
+      <!-- Solo mostrar si está logueado -->
+      <div *ngIf="isLoggedIn" class="dropdown">
         <button class="btn btn-admin dropdown-toggle" type="button" data-bs-toggle="dropdown">
           <i class="bi bi-person-circle me-2"></i>
-          Administrador
+          {{ getUserName() }}
+          <small class="ms-2 opacity-75">({{ getUserRole() }})</small>
         </button>
-        <ul class="dropdown-menu">
+        <ul class="dropdown-menu dropdown-menu-end">
           <li>
             <a class="dropdown-item" routerLink="/admin/perfil">
               <i class="bi bi-person me-2"></i>Perfil
@@ -21,11 +23,19 @@
           </li>
           <li><hr class="dropdown-divider"></li>
           <li>
-            <a class="dropdown-item text-danger" (click)="logout()">
+            <!-- Añadir preventDefault para evitar comportamiento por defecto del link -->
+            <a class="dropdown-item text-danger" href="javascript:void(0)" (click)="logout(); $event.preventDefault()">
               <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
             </a>
           </li>
         </ul>
+      </div>
+      
+      <!-- Mostrar botón de login si no está logueado -->
+      <div *ngIf="!isLoggedIn">
+        <a class="btn btn-admin" routerLink="/login">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+        </a>
       </div>
     </div>
   </div>

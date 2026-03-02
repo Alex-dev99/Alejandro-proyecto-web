@@ -10,9 +10,10 @@ $db = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"));
 
 if (!empty($data->email) && !empty($data->password)) {
-    $query = "SELECT id_profesor as id, nombre, email, 'PROFESOR' as rol, administrador 
+    // Primero verificar si existe un profesor con ese email y contraseña
+    $query = "SELECT id_profesor as id, nombre, email, 'PROFESOR' as rol, administrador, activo 
               FROM profesores 
-              WHERE email = :email AND password = :password AND activo = 1";
+              WHERE email = :email AND password = :password";
     
     $stmt = $db->prepare($query);
     $stmt->bindParam(':email', $data->email);
@@ -21,6 +22,30 @@ if (!empty($data->email) && !empty($data->password)) {
     
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Verificar si el profesor está inactivo
+        if ($row['activo'] == 0) {
+            http_response_code(403);
+            echo json_encode(array(
+                "success" => false, 
+                "message" => "⚠️ Tu cuenta está inactiva. Por favor, contacta al administrador.",
+                "type" => "inactive"
+            ));
+            exit();
+        }
+        
+        // Verificar si es administrador
+        if ($row['administrador'] == 0) {
+            http_response_code(403);
+            echo json_encode(array(
+                "success" => false, 
+                "message" => "❌ No tienes permisos suficientes. Solo los administradores pueden acceder al sistema.",
+                "type" => "insufficient_permissions"
+            ));
+            exit();
+        }
+        
+        // Si es administrador y está activo, permitir login
         $response = array(
             "success" => true,
             "message" => "Login exitoso",
@@ -36,6 +61,7 @@ if (!empty($data->email) && !empty($data->password)) {
         exit();
     }
     
+    // Si no es profesor, intentar con alumno
     $query = "SELECT id_alumno as id, nombre, email, 'ALUMNO' as rol 
               FROM alumnos 
               WHERE email = :email AND password = :password AND activo = 1";
@@ -46,25 +72,27 @@ if (!empty($data->email) && !empty($data->password)) {
     $stmt->execute();
     
     if ($stmt->rowCount() > 0) {
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $response = array(
-            "success" => true,
-            "message" => "Login exitoso",
-            "usuario" => array(
-                "id" => $row['id'],
-                "nombre" => $row['nombre'],
-                "email" => $row['email'],
-                "rol" => $row['rol'],
-                "administrador" => false
-            )
-        );
-        echo json_encode($response);
+        // Alumnos no pueden acceder según los requisitos
+        http_response_code(403);
+        echo json_encode(array(
+            "success" => false, 
+            "message" => "❌ No tienes permisos suficientes. Solo los administradores pueden acceder al sistema.",
+            "type" => "students_not_allowed"
+        ));
     } else {
         http_response_code(401);
-        echo json_encode(array("success" => false, "message" => "Credenciales incorrectas"));
+        echo json_encode(array(
+            "success" => false, 
+            "message" => "Email o contraseña incorrectos",
+            "type" => "invalid_credentials"
+        ));
     }
 } else {
     http_response_code(400);
-    echo json_encode(array("success" => false, "message" => "Datos incompletos"));
+    echo json_encode(array(
+        "success" => false, 
+        "message" => "Datos incompletos",
+        "type" => "incomplete_data"
+    ));
 }
 ?>

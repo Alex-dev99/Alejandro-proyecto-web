@@ -67,11 +67,15 @@ export class AlumnosComponent implements OnInit {
     return this.alumnos.filter(a => a.activo).length;
   }
 
-  get ingresoMensual(): number {
-    return this.alumnos
-      .filter(a => a.activo)
-      .reduce((total, alumno) => total + alumno.cuota_mensual, 0);
-  }
+get ingresoMensual(): number {
+  return this.alumnos
+    .filter(a => a.activo)
+    .reduce((total, alumno) => {
+      // Convertir a número explícitamente
+      const cuota = Number(alumno.cuota_mensual) || 0;
+      return total + cuota;
+    }, 0);
+}
 
   cargarAlumnos(): void {
     this.cargando = true;

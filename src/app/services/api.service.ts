@@ -10,7 +10,7 @@ import { tap } from 'rxjs/operators';
 export class ApiService {
   // URL según tu estructura de backend
   // private apiUrl = 'http://localhost/backend/api';
-  private apiUrl = 'http://localhost/Alejandro-proyecto-web/api/';
+  private apiUrl = 'http://localhost/proyectoFinal/Alejandro-proyecto-web/backend/api/';
 
   private httpOptions = {
     headers: new HttpHeaders({
@@ -22,49 +22,49 @@ export class ApiService {
 
   // ========== AUTH ==========
   login(credentials: { email: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login.php`, credentials, this.httpOptions)
+    return this.http.post(`${this.apiUrl}login.php`, credentials, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   // ========== ALUMNOS ==========
   getAlumnos(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/alumnos.php`)
+    return this.http.get(`${this.apiUrl}alumnos.php`)
       .pipe(catchError(this.handleError));
   }
 
   getAlumno(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/alumnos.php?id=${id}`)
+    return this.http.get(`${this.apiUrl}alumnos.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createAlumno(alumno: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/alumnos.php`, alumno, this.httpOptions)
+    return this.http.post(`${this.apiUrl}alumnos.php`, alumno, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   updateAlumno(id: number, alumno: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/alumnos.php?id=${id}`, alumno, this.httpOptions)
+    return this.http.put(`${this.apiUrl}alumnos.php?id=${id}`, alumno, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   deleteAlumno(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/alumnos.php?id=${id}`)
+    return this.http.delete(`${this.apiUrl}alumnos.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   // ========== PROFESORES ==========
   getProfesores(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/profesores.php`)
+    return this.http.get(`${this.apiUrl}profesores.php`)
       .pipe(catchError(this.handleError));
   }
 
   getProfesor(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/profesores.php?id=${id}`)
+    return this.http.get(`${this.apiUrl}profesores.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createProfesor(profesor: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/profesores.php`, profesor, this.httpOptions)
+    return this.http.post(`${this.apiUrl}profesores.php`, profesor, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
@@ -112,85 +112,85 @@ export class ApiService {
 
 
   deleteProfesor(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/profesores.php?id=${id}`)
+    return this.http.delete(`${this.apiUrl}profesores.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   // ========== AULAS ==========
   getAulas(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/aulas.php`)
+    return this.http.get(`${this.apiUrl}aulas.php`)
       .pipe(catchError(this.handleError));
   }
 
   getAula(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/aulas.php?id=${id}`)
+    return this.http.get(`${this.apiUrl}aulas.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createAula(aula: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/aulas.php`, aula, this.httpOptions)
+    return this.http.post(`${this.apiUrl}aulas.php`, aula, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   updateAula(id: number, aula: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/aulas.php?id=${id}`, aula, this.httpOptions)
+    return this.http.put(`${this.apiUrl}aulas.php?id=${id}`, aula, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   deleteAula(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/aulas.php?id=${id}`)
+    return this.http.delete(`${this.apiUrl}aulas.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   // ========== HORARIOS ==========
   getHorarios(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/horarios.php`)
+    return this.http.get(`${this.apiUrl}horarios.php`)
       .pipe(catchError(this.handleError));
   }
 
   getHorario(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/horarios.php?id=${id}`)
+    return this.http.get(`${this.apiUrl}horarios.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createHorario(horario: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/horarios.php`, horario, this.httpOptions)
+    return this.http.post(`${this.apiUrl}horarios.php`, horario, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   updateHorario(id: number, horario: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/horarios.php?id=${id}`, horario, this.httpOptions)
+    return this.http.put(`${this.apiUrl}horarios.php?id=${id}`, horario, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   deleteHorario(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/horarios.php?id=${id}`)
+    return this.http.delete(`${this.apiUrl}horarios.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   // ========== RECIBOS ==========
   getRecibos(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/recibos.php`)
+    return this.http.get(`${this.apiUrl}recibos.php`)
       .pipe(catchError(this.handleError));
   }
 
   getRecibo(id: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/recibos.php?id=${id}`)
+    return this.http.get(`${this.apiUrl}recibos.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
   createRecibo(recibo: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/recibos.php`, recibo, this.httpOptions)
+    return this.http.post(`${this.apiUrl}recibos.php`, recibo, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   updateRecibo(id: number, recibo: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/recibos.php?id=${id}`, recibo, this.httpOptions)
+    return this.http.put(`${this.apiUrl}recibos.php?id=${id}`, recibo, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
   deleteRecibo(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/recibos.php?id=${id}`)
+    return this.http.delete(`${this.apiUrl}recibos.php?id=${id}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -266,13 +266,13 @@ export class ApiService {
       });
     }
 
-    return this.http.post(`${this.apiUrl}/${endpoint}`, formData)
+    return this.http.post(`${this.apiUrl}${endpoint}`, formData)
       .pipe(catchError(this.handleError));
   }
 
   // Método genérico para GET con parámetros
   getWithParams(endpoint: string, params?: any): Observable<any> {
-    let url = `${this.apiUrl}/${endpoint}`;
+    let url = `${this.apiUrl}${endpoint}`;
 
     if (params) {
       const queryParams = new URLSearchParams();

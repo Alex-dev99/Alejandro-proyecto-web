@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-perfil',
@@ -13,22 +14,24 @@ import { RouterModule } from '@angular/router';
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h1>Mi Perfil</h1>
-              <p class="text-muted">Información del administrador</p>
+              <p class="text-muted" *ngIf="usuario?.administrador">Información del administrador</p>
+              <p class="text-muted" *ngIf="!usuario?.administrador">Información del profesor</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="row">
+      <div class="row" *ngIf="usuario">
         <div class="col-md-4">
           <div class="card shadow text-center">
             <div class="card-body">
               <div class="mb-3">
                 <i class="bi bi-person-circle display-1 text-primary"></i>
               </div>
-              <h4>Administrador</h4>
-              <p class="text-muted">admin@academia.com</p>
-              <span class="badge bg-success">Administrador</span>
+              <h4>{{ usuario.nombre }}</h4>
+              <p class="text-muted">{{ usuario.email }}</p>
+              <span class="badge bg-success" *ngIf="usuario.administrador">Administrador</span>
+              <span class="badge bg-info" *ngIf="!usuario.administrador">Profesor</span>
             </div>
           </div>
         </div>
@@ -42,19 +45,19 @@ import { RouterModule } from '@angular/router';
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Nombre</label>
-                  <input type="text" class="form-control" value="Administrador" readonly>
+                  <input type="text" class="form-control" [value]="usuario.nombre" readonly>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label class="form-label">Email</label>
-                  <input type="email" class="form-control" value="admin@academia.com" readonly>
+                  <input type="email" class="form-control" [value]="usuario.email" readonly>
                 </div>
                 <div class="col-12 mb-3">
                   <label class="form-label">Rol</label>
-                  <input type="text" class="form-control" value="Administrador" readonly>
+                  <input type="text" class="form-control" [value]="usuario.rol || 'Usuario'" readonly>
                 </div>
                 <div class="col-12 mb-3">
-                  <label class="form-label">Fecha de Registro</label>
-                  <input type="text" class="form-control" value="2024-01-01" readonly>
+                  <label class="form-label">Estado</label>
+                  <input type="text" class="form-control" value="Activo" readonly>
                 </div>
               </div>
               <button class="btn btn-primary" disabled>
@@ -62,6 +65,15 @@ import { RouterModule } from '@angular/router';
                 Editar Perfil (Próximamente)
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" *ngIf="!usuario">
+        <div class="col-12">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            No hay información de usuario disponible
           </div>
         </div>
       </div>
@@ -77,4 +89,14 @@ import { RouterModule } from '@angular/router';
     }
   `]
 })
-export class PerfilComponent { }
+export class PerfilComponent implements OnInit {
+  usuario: any = null;
+
+  constructor(private authService: AuthService) { }
+
+  ngOnInit(): void {
+    // Obtener el usuario logeado
+    this.usuario = this.authService.getCurrentUser();
+    console.log('👤 Usuario en perfil:', this.usuario);
+  }
+}
