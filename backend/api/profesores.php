@@ -1,17 +1,15 @@
 <?php
-// === IMPORTANTE: NO DEBE HABER NADA ANTES DE ESTA LÍNEA ===
 header("Access-Control-Allow-Origin: http://localhost:4200");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json; charset=UTF-8');
 
-// Configuración de errores - IMPORTANTE para evitar output no deseado
+
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_reporting(0);
 
-// Manejar preflight OPTIONS
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -25,14 +23,12 @@ $db = $database->getConnection();
 $method = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? $_GET['id'] : null;
 
-// Función para enviar respuesta JSON consistente
 function sendJsonResponse($data, $statusCode = 200) {
     http_response_code($statusCode);
     echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit();
 }
 
-// Función para manejar excepciones
 function handleException($e, $message = "Error en el servidor") {
     error_log("ERROR en profesores.php: " . $e->getMessage() . "\n" . $e->getTraceAsString());
     sendJsonResponse([
@@ -45,7 +41,6 @@ try {
     switch ($method) {
         case 'GET':
             if ($id) {
-                // Obtener un profesor específico
                 $query = "SELECT id_profesor, nombre, apellidos, alias, fecha_nacimiento, 
                                  materias_imparte, email, cuenta_bancaria, activo, administrador 
                           FROM profesores WHERE id_profesor = :id";
@@ -63,7 +58,6 @@ try {
                     ], 404);
                 }
             } else {
-                // Obtener todos los profesores
                 $query = "SELECT id_profesor, nombre, apellidos, alias, fecha_nacimiento, 
                                  materias_imparte, email, cuenta_bancaria, activo, administrador 
                           FROM profesores ORDER BY nombre";
@@ -75,7 +69,6 @@ try {
             break;
             
         case 'POST':
-            // Crear nuevo profesor
             $input = file_get_contents("php://input");
             
             if (empty($input)) {
@@ -94,7 +87,6 @@ try {
                 ], 400);
             }
             
-            // Validar campos requeridos
             if (empty($data->nombre) || empty($data->email) || empty($data->password)) {
                 sendJsonResponse([
                     "success" => false,
@@ -116,7 +108,6 @@ try {
             
             $stmt = $db->prepare($query);
             
-            // Valores por defecto
             $apellidos = isset($data->apellidos) ? $data->apellidos : '';
             $alias = isset($data->alias) ? $data->alias : $data->nombre;
             $fecha_nacimiento = isset($data->fecha_nacimiento) ? $data->fecha_nacimiento : null;
@@ -135,7 +126,6 @@ try {
             $stmt->bindParam(':administrador', $administrador);
             $stmt->bindParam(':activo', $activo);
             
-            // Hashear password
             $password_hash = password_hash($data->password, PASSWORD_DEFAULT);
             $stmt->bindParam(':password', $password_hash);
             
@@ -155,7 +145,6 @@ try {
             break;
             
         case 'PUT':
-            // Actualizar profesor existente
             if (!$id) {
                 sendJsonResponse([
                     "success" => false,
@@ -181,7 +170,6 @@ try {
                 ], 400);
             }
             
-            // Verificar que el profesor existe
             $checkQuery = "SELECT id_profesor FROM profesores WHERE id_profesor = :id";
             $checkStmt = $db->prepare($checkQuery);
             $checkStmt->bindParam(':id', $id);
@@ -194,11 +182,10 @@ try {
                 ], 404);
             }
             
-            // Construir la consulta UPDATE dinámicamente
+
             $updateFields = [];
             $params = [':id' => $id];
-            
-            // Campos que se pueden actualizar
+
             if (isset($data->nombre)) {
                 $updateFields[] = "nombre = :nombre";
                 $params[':nombre'] = $data->nombre;
@@ -244,7 +231,6 @@ try {
                 $params[':activo'] = $data->activo ? 1 : 0;
             }
             
-            // Password opcional (solo si se envía)
             if (isset($data->password) && !empty($data->password)) {
                 $updateFields[] = "password = :password";
                 $params[':password'] = password_hash($data->password, PASSWORD_DEFAULT);
@@ -260,7 +246,6 @@ try {
             $query = "UPDATE profesores SET " . implode(', ', $updateFields) . " WHERE id_profesor = :id";
             $stmt = $db->prepare($query);
             
-            // Bind de todos los parámetros
             foreach ($params as $key => $value) {
                 $stmt->bindValue($key, $value);
             }
@@ -281,15 +266,13 @@ try {
             break;
             
         case 'DELETE':
-            // Eliminar profesor
             if (!$id) {
                 sendJsonResponse([
                     "success" => false,
                     "message" => "ID de profesor requerido"
                 ], 400);
             }
-            
-            // Verificar que existe
+
             $checkQuery = "SELECT id_profesor FROM profesores WHERE id_profesor = :id";
             $checkStmt = $db->prepare($checkQuery);
             $checkStmt->bindParam(':id', $id);
@@ -328,12 +311,12 @@ try {
     }
     
 } catch (PDOException $e) {
-    // Error de base de datos
+
     handleException($e, "Error de base de datos");
 } catch (Exception $e) {
-    // Otros errores
+
     handleException($e, "Error en el servidor");
 }
 
-// === IMPORTANTE: NO DEBE HABER NADA DESPUÉS DE ESTA LÍNEA ===
+
 ?>

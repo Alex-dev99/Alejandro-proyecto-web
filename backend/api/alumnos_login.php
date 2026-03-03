@@ -38,7 +38,7 @@ if (!empty($data->email) && !empty($data->password)) {
                 http_response_code(403);
                 echo json_encode(array(
                     "success" => false, 
-                    "message" => "⚠️ Tu cuenta está inactiva. Por favor, contacta al administrador.",
+                    "message" => "Tu cuenta está inactiva. Por favor, contacta al administrador.",
                     "type" => "inactive"
                 ));
                 exit();
