@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router';
 })
 export class DashboardComponent {
   stats = [
-    { title: 'Total Alumnos', value: '25', icon: 'bi-people', color: 'primary', route: '/admin/alumnos' },
+    { title: 'Total Alumnos', value: '4', icon: 'bi-people', color: 'primary', route: '/admin/alumnos' },
     { title: 'Profesores Activos', value: '8', icon: 'bi-person-badge', color: 'success', route: '/admin/profesores' },
     { title: 'Aulas Disponibles', value: '6', icon: 'bi-building', color: 'info', route: '/admin/aulas' },
     { title: 'Pagos Pendientes', value: '3', icon: 'bi-exclamation-triangle', color: 'warning', route: '/admin/recibos' }
