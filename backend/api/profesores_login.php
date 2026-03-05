@@ -17,67 +17,79 @@ $db = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"));
 
 if (!empty($data->email) && !empty($data->password)) {
-    $query = "SELECT id_profesor, nombre, apellidos, email, materias_imparte, administrador, activo 
+    $query = "SELECT id_profesor, nombre, apellidos, email, materias_imparte, administrador, activo, password 
               FROM profesores 
               WHERE email = :email 
-              AND password = :password
               LIMIT 1";
-    
+
     $stmt = $db->prepare($query);
     $stmt->bindParam(':email', $data->email);
-    $stmt->bindParam(':password', $data->password);
-    
+
     try {
         $stmt->execute();
-        
+
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($row['activo'] == 0) {
-                http_response_code(403);
+
+            // Verificar contraseña cifrada
+            if (password_verify($data->password, $row['password'])) {
+                if ($row['activo'] == 0) {
+                    http_response_code(403);
+                    echo json_encode(array(
+                        "success" => false,
+                        "message" => "⚠️ Tu cuenta está inactiva. Por favor, contacta al administrador.",
+                        "type" => "inactive"
+                    ));
+                    exit();
+                }
+
+                http_response_code(200);
                 echo json_encode(array(
-                    "success" => false, 
-                    "message" => "⚠️ Tu cuenta está inactiva. Por favor, contacta al administrador.",
-                    "type" => "inactive"
+                    "success" => true,
+                    "message" => "Login exitoso",
+                    "usuario" => array(
+                        "id" => intval($row['id_profesor']),
+                        "nombre" => $row['nombre'],
+                        "apellidos" => $row['apellidos'],
+                        "email" => $row['email'],
+                        "materias_imparte" => $row['materias_imparte'],
+                        "administrador" => intval($row['administrador']),
+                        "rol" => "PROFESOR"
+                    )
                 ));
                 exit();
             }
-            
-            http_response_code(200);
-            echo json_encode(array(
-                "success" => true,
-                "message" => "Login exitoso",
-                "usuario" => array(
-                    "id" => intval($row['id_profesor']),
-                    "nombre" => $row['nombre'],
-                    "apellidos" => $row['apellidos'],
-                    "email" => $row['email'],
-                    "materias_imparte" => $row['materias_imparte'],
-                    "administrador" => intval($row['administrador']),
-                    "rol" => "PROFESOR"
-                )
-            ));
-            exit();
-        } else {
+            else {
+                http_response_code(401);
+                echo json_encode(array(
+                    "success" => false,
+                    "message" => "Contraseña incorrecta",
+                    "type" => "invalid_credentials"
+                ));
+            }
+        }
+        else {
             http_response_code(401);
             echo json_encode(array(
-                "success" => false, 
-                "message" => "Email o contraseña incorrectos",
+                "success" => false,
+                "message" => "Email incorrecto o no encontrado",
                 "type" => "invalid_credentials"
             ));
         }
-    } catch (PDOException $e) {
+    }
+    catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(array(
-            "success" => false, 
+            "success" => false,
             "message" => "Error en la base de datos: " . $e->getMessage(),
             "type" => "database_error"
         ));
     }
-} else {
+}
+else {
     http_response_code(400);
     echo json_encode(array(
-        "success" => false, 
+        "success" => false,
         "message" => "Email y contraseña son requeridos",
         "type" => "incomplete_data"
     ));

@@ -53,7 +53,7 @@ export class AulasComponent implements OnInit {
   cargarAulas(): void {
     this.cargando = true;
     this.errorCarga = '';
-    
+
     this.apiService.getAulas().subscribe({
       next: (data) => {
         this.aulas = data;
@@ -112,26 +112,33 @@ export class AulasComponent implements OnInit {
   guardarAula(): void {
     if (this.aulaForm.valid) {
       const aulaData = this.aulaForm.value;
-      
+      this.cargando = true;
+
       if (this.editando && this.aulaEditando) {
-        const aulaActualizada = { ...aulaData };
-        
-        const index = this.aulas.findIndex(a => a.id_aula === this.aulaEditando!.id_aula);
-        this.aulas[index] = {
-          ...this.aulaEditando,
-          ...aulaActualizada
-        };
-        
-        this.cancelarEdicion();
+        // Update existing via API
+        this.apiService.updateAula(this.aulaEditando.id_aula, aulaData).subscribe({
+          next: () => {
+            this.cargarAulas();
+            this.cancelarEdicion();
+          },
+          error: (error) => {
+            console.error('Error al actualizar aula:', error);
+            this.cargando = false;
+            // Podrías añadir un manejo de error visual aquí
+          }
+        });
       } else {
-        
-        const nuevaAula: Aula = {
-          id_aula: Math.max(...this.aulas.map(a => a.id_aula)) + 1,
-          ...aulaData
-        };
-        
-        this.aulas.push(nuevaAula);
-        this.cancelarEdicion();
+        // Create new via API
+        this.apiService.createAula(aulaData).subscribe({
+          next: () => {
+            this.cargarAulas();
+            this.cancelarEdicion();
+          },
+          error: (error) => {
+            console.error('Error al crear aula:', error);
+            this.cargando = false;
+          }
+        });
       }
     } else {
       Object.keys(this.aulaForm.controls).forEach(key => {
@@ -149,7 +156,16 @@ export class AulasComponent implements OnInit {
 
   eliminarAula(id: number): void {
     if (confirm('¿Estás seguro de eliminar esta aula?')) {
-      this.aulas = this.aulas.filter(a => a.id_aula !== id);
+      this.cargando = true;
+      this.apiService.deleteAula(id).subscribe({
+        next: () => {
+          this.cargarAulas();
+        },
+        error: (error) => {
+          console.error('Error al eliminar aula:', error);
+          this.cargando = false;
+        }
+      });
     }
   }
 

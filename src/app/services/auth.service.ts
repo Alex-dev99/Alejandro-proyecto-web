@@ -19,7 +19,7 @@ export class AuthService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    
+
     // Cargar usuario SOLO en navegador
     if (this.isBrowser) {
       this.loadUserFromStorage();
@@ -28,11 +28,11 @@ export class AuthService {
 
   private loadUserFromStorage(): void {
     try {
-      const savedUser = localStorage.getItem('currentUser');
+      const savedUser = sessionStorage.getItem('currentUser');
       if (savedUser) {
         const user = JSON.parse(savedUser);
         this.currentUserSubject.next(user);
-        console.log('✅ Usuario cargado desde localStorage:', user.nombre);
+        console.log('✅ Usuario cargado desde sessionStorage:', user.nombre);
       }
     } catch (error) {
       console.error('❌ Error loading user from storage:', error);
@@ -48,7 +48,7 @@ export class AuthService {
             console.log('✅ Login exitoso:', response.usuario);
             this.saveUserToStorage(response.usuario);
             this.currentUserSubject.next(response.usuario);
-            
+
             // Redirigir según el rol
             setTimeout(() => {
               if (response.usuario.administrador === 1 || response.usuario.administrador === true) {
@@ -68,10 +68,10 @@ export class AuthService {
 
   private saveUserToStorage(user: any): void {
     try {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      localStorage.setItem('token', 'dummy-token-' + Date.now()); // Si tu API devuelve token, guárdalo
-      localStorage.setItem('userRole', user.administrador ? 'admin' : 'teacher');
-      console.log('💾 Usuario guardado en localStorage');
+      sessionStorage.setItem('currentUser', JSON.stringify(user));
+      sessionStorage.setItem('token', 'dummy-token-' + Date.now()); // Si tu API devuelve token, guárdalo
+      sessionStorage.setItem('userRole', user.administrador ? 'admin' : 'teacher');
+      console.log('💾 Usuario guardado en sessionStorage');
     } catch (error) {
       console.error('❌ Error saving user to storage:', error);
     }
@@ -79,22 +79,22 @@ export class AuthService {
 
   logout(): void {
     console.log('🔴 Ejecutando logout...');
-    
+
     // 1. Mostrar información antes de limpiar
     const currentUser = this.getCurrentUser();
     console.log('📊 Usuario actual antes de logout:', currentUser?.nombre);
-    
+
     // 2. Limpiar todos los datos de sesión
     this.clearAllStorage();
-    
+
     // 3. Resetear el BehaviorSubject
     this.currentUserSubject.next(null);
-    
+
     console.log('✅ Storage limpiado');
     console.log('🔍 Verificando después de limpiar:');
-    console.log('currentUser en localStorage:', localStorage.getItem('currentUser'));
+    console.log('currentUser en sessionStorage:', sessionStorage.getItem('currentUser'));
     console.log('currentUser en BehaviorSubject:', this.currentUserSubject.value);
-    
+
     // 4. Redirigir a login con timeout para asegurar
     setTimeout(() => {
       console.log('🔄 Redirigiendo a login...');
@@ -114,19 +114,21 @@ export class AuthService {
 
   private clearAllStorage(): void {
     if (!this.isBrowser) return;
-    
+
     try {
-      // Limpiar localStorage
+      // Limpiar sessionStorage
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('userRole');
+
+      // Limpiar localStorage por si acaso quedó algo anterior
       localStorage.removeItem('currentUser');
       localStorage.removeItem('token');
       localStorage.removeItem('userRole');
-      
-      // Limpiar sessionStorage por si acaso
-      sessionStorage.clear();
-      
+
       // Limpiar cookies relacionadas (opcional)
       this.clearAuthCookies();
-      
+
       console.log('🧹 Todos los datos de sesión eliminados');
     } catch (error) {
       console.error('❌ Error clearing storage:', error);

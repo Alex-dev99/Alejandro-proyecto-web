@@ -103,7 +103,8 @@
                   <label class="form-check-label" for="administrador">
                     <strong>Es Administrador</strong>
                   </label>
-                  <div class="form-text small">Podrá acceder al panel de administración</div>
+                  <div class="form-text small" *ngIf="!(editando && profesorEditando && isCurrentUser(profesorEditando.id_profesor))">Podrá acceder al panel de administración</div>
+                  <div class="form-text small text-danger" *ngIf="editando && profesorEditando && isCurrentUser(profesorEditando.id_profesor)">No puedes quitarte el rol de administrador a ti mismo.</div>
                 </div>
               </div>
             </div>
@@ -209,6 +210,7 @@
                     <i class="bi bi-pencil"></i>
                   </button>
                   <button 
+                    *ngIf="!isCurrentUser(profesor.id_profesor)"
                     class="btn" 
                     [class.btn-outline-success]="!profesor.activo" 
                     [class.btn-outline-warning]="profesor.activo"
@@ -216,7 +218,9 @@
                     [title]="profesor.activo ? 'Desactivar' : 'Activar'">
                     <i class="bi" [class.bi-check]="!profesor.activo" [class.bi-x]="profesor.activo"></i>
                   </button>
-                  <button class="btn btn-outline-danger" (click)="eliminarProfesor(profesor.id_profesor)" title="Eliminar">
+                  <button 
+                    *ngIf="!isCurrentUser(profesor.id_profesor)"
+                    class="btn btn-outline-danger" (click)="eliminarProfesor(profesor.id_profesor)" title="Eliminar">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>

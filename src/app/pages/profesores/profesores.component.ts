@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 
 interface Profesor {
   id_profesor: number;
@@ -34,12 +35,14 @@ export class ProfesoresComponent implements OnInit {
   mostrarPassword = false;
   cargando = false;
   errorCarga = '';
+  currentUserId: number | null = null;
 
   materias = ['Matemáticas', 'Inglés', 'Francés', 'Física', 'Química', 'Lengua', 'Historia', 'Biología'];
 
   constructor(
     private fb: FormBuilder,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private authService: AuthService
   ) {
     this.profesorForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
@@ -55,7 +58,15 @@ export class ProfesoresComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    if (user && (user.id || user.id_profesor)) {
+      this.currentUserId = Number(user.id || user.id_profesor);
+    }
     this.cargarProfesores();
+  }
+
+  isCurrentUser(id: number): boolean {
+    return this.currentUserId === id;
   }
 
   get totalProfesores(): number {
@@ -78,7 +89,7 @@ export class ProfesoresComponent implements OnInit {
   cargarProfesores(): void {
     this.cargando = true;
     this.errorCarga = '';
-    
+
     this.apiService.getProfesores().subscribe({
       next: (data) => {
         this.profesores = data;
@@ -130,7 +141,7 @@ export class ProfesoresComponent implements OnInit {
     this.profesorForm.reset({ administrador: false });
     this.mostrarFormulario = true;
     this.mostrarPassword = false;
-    
+
     this.profesorForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.profesorForm.get('password')?.updateValueAndValidity();
   }
@@ -151,7 +162,7 @@ export class ProfesoresComponent implements OnInit {
     });
     this.mostrarFormulario = true;
     this.mostrarPassword = false;
-    
+
     this.profesorForm.get('password')?.clearValidators();
     this.profesorForm.get('password')?.setValidators([Validators.minLength(6)]);
     this.profesorForm.get('password')?.updateValueAndValidity();
@@ -163,14 +174,19 @@ export class ProfesoresComponent implements OnInit {
 
   guardarProfesor(): void {
     if (this.profesorForm.valid) {
-      const profesorData = this.profesorForm.value;
-      
+      const profesorData = { ...this.profesorForm.value };
+
       if (this.editando && this.profesorEditando) {
+        // Prevenir quitarse los permisos de administrador a sí mismo
+        if (this.isCurrentUser(this.profesorEditando.id_profesor) && !profesorData.administrador) {
+          profesorData.administrador = true; // Forzar a true
+        }
+
         this.apiService.updateProfesor(this.profesorEditando.id_profesor, profesorData)
           .subscribe({
             next: (response) => {
               if (response.success) {
-                this.cargarProfesores(); 
+                this.cargarProfesores();
                 this.cancelarEdicion();
               } else {
                 alert('Error al actualizar: ' + response.message);
@@ -183,16 +199,16 @@ export class ProfesoresComponent implements OnInit {
           });
       } else {
         const nuevoProfesor: Profesor = {
-          id_profesor: 0, 
+          id_profesor: 0,
           ...profesorData,
           activo: true
         };
-        
+
         this.apiService.createProfesor(nuevoProfesor)
           .subscribe({
             next: (response) => {
               if (response.success) {
-                this.cargarProfesores(); 
+                this.cargarProfesores();
                 this.cancelarEdicion();
               } else {
                 alert('Error al crear: ' + response.message);
@@ -220,8 +236,12 @@ export class ProfesoresComponent implements OnInit {
   }
 
   toggleActivo(profesor: Profesor): void {
+    if (this.isCurrentUser(profesor.id_profesor)) {
+      alert('No puedes cambiar tu propio estado de actividad.');
+      return;
+    }
     const profesorActualizado = { ...profesor, activo: !profesor.activo };
-    
+
     this.apiService.updateProfesor(profesor.id_profesor, profesorActualizado)
       .subscribe({
         next: (response) => {
@@ -239,12 +259,16 @@ export class ProfesoresComponent implements OnInit {
   }
 
   eliminarProfesor(id: number): void {
+    if (this.isCurrentUser(id)) {
+      alert('No puedes eliminarte a ti mismo.');
+      return;
+    }
     if (confirm('¿Estás seguro de eliminar este profesor?')) {
       this.apiService.deleteProfesor(id)
         .subscribe({
           next: (response) => {
             if (response.success) {
-              this.cargarProfesores(); 
+              this.cargarProfesores();
             } else {
               alert('Error al eliminar: ' + response.message);
             }
