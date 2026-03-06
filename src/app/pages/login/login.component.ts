@@ -34,7 +34,6 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Solo verificar autenticación en el navegador
     if (this.isBrowser && this.authService.isLoggedIn()) {
       this.redirectBasedOnRole();
     }
@@ -99,7 +98,6 @@ export class LoginComponent implements OnInit {
       this.errorMessage += '1. XAMPP esté iniciado (Apache y MySQL)\n';
       this.errorMessage += '2. La API esté accesible en: http://localhost/proyectoFinal/Alejandro-proyecto-web/backend/api/';
     } else if (errorMessage.includes('Código: 403') || errorMessage.includes('403')) {
-      // Este error viene del servidor con mensaje específico
       this.errorType = 'insufficient_permissions';
       this.errorMessage = 'Acceso denegado';
     } else if (errorMessage.includes('Código: 401') || errorMessage.includes('401')) {
@@ -122,4 +120,3 @@ export class LoginComponent implements OnInit {
     return this.loginForm.get('password'); 
   }
 }
-// ← AQUÍ CIERRA LA CLASE - Fíjate que tienes esta línea

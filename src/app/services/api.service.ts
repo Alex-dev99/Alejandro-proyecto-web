@@ -8,8 +8,6 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ApiService {
-  // URL según tu estructura de backend
-  // private apiUrl = 'http://localhost/backend/api';
   private apiUrl = 'http://localhost/proyectoFinal/Alejandro-proyecto-web/backend/api/';
 
   private httpOptions = {
@@ -20,13 +18,12 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  // ========== AUTH ==========
+
   login(credentials: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}login.php`, credentials, this.httpOptions)
       .pipe(catchError(this.handleError));
   }
 
-  // ========== ALUMNOS ==========
   getAlumnos(): Observable<any> {
     return this.http.get(`${this.apiUrl}alumnos.php`)
       .pipe(catchError(this.handleError));
@@ -52,7 +49,7 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // ========== PROFESORES ==========
+
   getProfesores(): Observable<any> {
     return this.http.get(`${this.apiUrl}profesores.php`)
       .pipe(catchError(this.handleError));
@@ -76,29 +73,25 @@ export class ApiService {
   updateProfesor(id: number, data: any): Observable<any> {
   const url = `${this.apiUrl}profesores.php?id=${id}`;
   
-  console.log('🔍 URL de actualización:', url);
-  console.log('📦 Datos enviados:', data);
+  console.log('URL de actualización:', url);
+  console.log('Datos enviados:', data);
   
   return this.http.put(url, data, this.httpOptions).pipe(
     tap(response => {
-      console.log('✅ Respuesta del servidor:', response);
+      console.log('Respuesta del servidor:', response);
     }),
     catchError(error => {
-      console.error('❌ Error completo:', error);
+      console.error('Error completo:', error);
       
-      // Intentar obtener más información del error
       let errorMessage = 'Error desconocido';
       if (error.error instanceof ErrorEvent) {
-        // Error del lado del cliente
         errorMessage = `Error: ${error.error.message}`;
       } else {
-        // Error del lado del servidor
         errorMessage = `Error ${error.status}: ${error.statusText}`;
         
-        // Si el error contiene HTML, extraer información útil
         if (typeof error.error === 'string' && error.error.includes('<br />')) {
-          console.error('❌ El servidor devolvió HTML en lugar de JSON');
-          console.error('❌ Contenido del error:', error.error.substring(0, 500));
+          console.error('El servidor devolvió HTML en lugar de JSON');
+          console.error('Contenido del error:', error.error.substring(0, 500));
           errorMessage += ' - El servidor devolvió un error HTML. Revisa la consola del servidor.';
         } else if (error.error && error.error.message) {
           errorMessage += ` - ${error.error.message}`;
@@ -116,7 +109,6 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // ========== AULAS ==========
   getAulas(): Observable<any> {
     return this.http.get(`${this.apiUrl}aulas.php`)
       .pipe(catchError(this.handleError));
@@ -142,7 +134,6 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // ========== HORARIOS ==========
   getHorarios(): Observable<any> {
     return this.http.get(`${this.apiUrl}horarios.php`)
       .pipe(catchError(this.handleError));
@@ -168,7 +159,6 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // ========== RECIBOS ==========
   getRecibos(): Observable<any> {
     return this.http.get(`${this.apiUrl}recibos.php`)
       .pipe(catchError(this.handleError));
@@ -194,7 +184,7 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // ========== MANEJO DE ERRORES ==========
+
   private handleError(error: HttpErrorResponse) {
     console.error('API Service Error:', {
       status: error.status,
@@ -206,10 +196,8 @@ export class ApiService {
     let errorMessage = 'Error desconocido';
 
     if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Error del lado del servidor
       switch (error.status) {
         case 0:
           errorMessage = 'No se puede conectar al servidor. Verifica que:';
@@ -253,9 +241,6 @@ export class ApiService {
     return throwError(() => new Error(errorMessage));
   }
 
-  // ========== MÉTODOS ADICIONALES ÚTILES ==========
-
-  // Para subir archivos (si necesitas)
   uploadFile(endpoint: string, file: File, data?: any): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
@@ -270,7 +255,6 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // Método genérico para GET con parámetros
   getWithParams(endpoint: string, params?: any): Observable<any> {
     let url = `${this.apiUrl}${endpoint}`;
 

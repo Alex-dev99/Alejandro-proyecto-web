@@ -37,7 +37,6 @@ export class AlumnosComponent implements OnInit {
 
   metodosPago = ['Efectivo', 'Tarjeta', 'Transferencia', 'Bizum'];
   cursos = ['1º ESO', '2º ESO', '3º ESO', '4º ESO', '1º Bachillerato', '2º Bachillerato'];
-  materias = ['Matemáticas', 'Inglés', 'Lengua', 'Física', 'Química', 'Historia'];
 
   constructor(
     private fb: FormBuilder,
@@ -71,7 +70,6 @@ get ingresoMensual(): number {
   return this.alumnos
     .filter(a => a.activo)
     .reduce((total, alumno) => {
-      // Convertir a número explícitamente
       const cuota = Number(alumno.cuota_mensual) || 0;
       return total + cuota;
     }, 0);

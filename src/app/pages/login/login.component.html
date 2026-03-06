@@ -51,7 +51,6 @@
               </div>
             </div>
 
-            <!-- Mensaje de error para cuenta inactiva -->
             <div *ngIf="errorMessage && errorType === 'inactive'" class="alert alert-warning alert-dismissible fade show" role="alert">
               <i class="bi bi-exclamation-circle me-2"></i>
               <strong>Cuenta Inactiva</strong><br>
@@ -59,7 +58,6 @@
               <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
             </div>
 
-            <!-- Mensaje de error para permisos insuficientes -->
             <div *ngIf="errorMessage && errorType === 'insufficient_permissions'" class="alert alert-danger alert-dismissible fade show" role="alert">
               <i class="bi bi-shield-exclamation me-2"></i>
               <strong>Acceso Denegado</strong><br>
@@ -67,14 +65,12 @@
               <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
             </div>
 
-            <!-- Mensaje genérico de error -->
             <div *ngIf="errorMessage && !errorType" class="alert alert-danger alert-dismissible fade show" role="alert">
               <i class="bi bi-exclamation-triangle me-2"></i>
               <span style="white-space: pre-line">{{ errorMessage }}</span>
               <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
             </div>
 
-            <!-- Mensaje de error de conexión -->
             <div *ngIf="errorMessage && errorType === 'connection_error'" class="alert alert-danger alert-dismissible fade show" role="alert">
               <i class="bi bi-wifi-off me-2"></i>
               <strong>Error de Conexión</strong><br>

@@ -19,14 +19,12 @@ export class TopbarComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService // Añade el AuthService aquí
+    private authService: AuthService 
   ) {}
 
   ngOnInit(): void {
-    // Inicializar con los datos del usuario actual
     this.updateUserInfo();
     
-    // Suscribirse a cambios en el usuario
     this.authService.currentUser$.subscribe(user => {
       this.updateUserInfo();
     });
@@ -47,11 +45,9 @@ export class TopbarComponent implements OnInit {
     console.log('👤 Usuario hace clic en cerrar sesión');
     console.log('🔍 Estado actual - Logueado:', this.authService.isLoggedIn(), 'Usuario:', this.authService.getCurrentUser()?.nombre);
     
-    // Usar el AuthService para logout
     this.authService.logout();
   }
 
-  // Métodos auxiliares para la plantilla
   getUserName(): string {
     const user = this.authService.getCurrentUser();
     return user ? user.nombre : 'Administrador';

@@ -124,11 +124,9 @@ export class AulasComponent implements OnInit {
           error: (error) => {
             console.error('Error al actualizar aula:', error);
             this.cargando = false;
-            // Podrías añadir un manejo de error visual aquí
           }
         });
       } else {
-        // Create new via API
         this.apiService.createAula(aulaData).subscribe({
           next: () => {
             this.cargarAulas();

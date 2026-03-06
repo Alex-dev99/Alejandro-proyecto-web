@@ -84,7 +84,6 @@ export class RecibosComponent implements OnInit {
         
         if (Array.isArray(recibosData)) {
           this.recibos = recibosData.map((recibo: any) => {
-            // Convertir el estado al tipo correcto
             const estado = recibo.estado === 'PAGADO' ? 'PAGADO' as 'PAGADO' : 'PENDIENTE' as 'PENDIENTE';
             
             return {
@@ -99,14 +98,14 @@ export class RecibosComponent implements OnInit {
             };
           });
         } else {
-          console.error('❌ Los recibos no son un array:', recibosData);
+          console.error('Los recibos no son un array:', recibosData);
           this.recibos = [];
         }
         
         this.cargarAlumnos();
       },
       error: (reciboError) => {
-        console.error('❌ Error cargando recibos:', reciboError);
+        console.error('Error cargando recibos:', reciboError);
         this.errorCarga = 'Error al cargar los recibos. Verifica la conexión con el servidor.';
         this.recibos = [];
         this.cargando = false;
@@ -117,7 +116,7 @@ export class RecibosComponent implements OnInit {
   private cargarAlumnos(): void {
     this.apiService.getAlumnos().subscribe({
       next: (alumnosData: any) => {
-        console.log('📊 Alumnos cargados:', alumnosData);
+        console.log('Alumnos cargados:', alumnosData);
         
         if (Array.isArray(alumnosData)) {
           this.alumnos = alumnosData.map((alumno: any) => ({
@@ -128,7 +127,7 @@ export class RecibosComponent implements OnInit {
             activo: alumno.activo !== undefined ? alumno.activo : true
           }));
         } else {
-          console.error('❌ Los alumnos no son un array:', alumnosData);
+          console.error('Los alumnos no son un array:', alumnosData);
           this.alumnos = [];
         }
         
@@ -136,7 +135,7 @@ export class RecibosComponent implements OnInit {
         this.vincularNombresAlumnos();
       },
       error: (alumnoError) => {
-        console.error('❌ Error cargando alumnos:', alumnoError);
+        console.error('Error cargando alumnos:', alumnoError);
         this.alumnos = [];
         this.cargando = false;
       }
@@ -171,7 +170,6 @@ get ingresosTotales(): number {
   return this.recibos
     .filter(r => r.estado === 'PAGADO')
     .reduce((total, recibo) => {
-      // Convertir importe a número
       const importeNumero = typeof recibo.importe === 'string' 
         ? parseFloat(recibo.importe) 
         : recibo.importe;
@@ -184,7 +182,6 @@ get pendienteCobro(): number {
   return this.recibos
     .filter(r => r.estado === 'PENDIENTE')
     .reduce((total, recibo) => {
-      // Convertir importe a número
       const importeNumero = typeof recibo.importe === 'string' 
         ? parseFloat(recibo.importe) 
         : recibo.importe;
@@ -270,7 +267,7 @@ get pendienteCobro(): number {
         );
         
         if (existeRecibo) {
-          alert('⚠️ Ya existe un recibo para este alumno en el mes seleccionado.');
+          alert('Ya existe un recibo para este alumno en el mes seleccionado.');
         }
       }
     }
@@ -293,7 +290,6 @@ get pendienteCobro(): number {
             console.log('✅ Respuesta al marcar como pagado:', response);
             
             if (response.success || response.affected_rows > 0) {
-              // Actualizar localmente
               const index = this.recibos.findIndex(r => r.id_recibo === recibo.id_recibo);
               if (index !== -1) {
                 this.recibos[index] = { 
@@ -305,11 +301,11 @@ get pendienteCobro(): number {
               
               this.cargarDatos();
             } else {
-              alert('❌ Error al marcar como pagado');
+              alert('Error al marcar como pagado');
             }
           },
           error: (error) => {
-            console.error('❌ Error marcando como pagado:', error);
+            console.error('Error marcando como pagado:', error);
             alert('Error al marcar recibo como pagado. Ver consola para detalles.');
           }
         });
@@ -320,7 +316,6 @@ get pendienteCobro(): number {
     if (this.reciboForm.valid) {
       const formData = this.reciboForm.value;
       
-      // Convertir el estado al tipo correcto
       const estado = formData.estado === 'PAGADO' ? 'PAGADO' as 'PAGADO' : 'PENDIENTE' as 'PENDIENTE';
       
       const reciboData = {
@@ -335,18 +330,18 @@ get pendienteCobro(): number {
         this.apiService.updateRecibo(this.reciboEditando.id_recibo, reciboData)
           .subscribe({
             next: (response: any) => {
-              console.log('✅ Respuesta de actualización:', response);
+              console.log('Respuesta de actualización:', response);
               
               if (response.success || response.affected_rows > 0) {
                 this.cargarDatos();
                 this.cancelarEdicion();
-                alert('✅ Recibo actualizado correctamente');
+                alert('Recibo actualizado correctamente');
               } else {
-                alert('❌ Error al actualizar recibo');
+                alert('Error al actualizar recibo');
               }
             },
             error: (error) => {
-              console.error('❌ Error actualizando recibo:', error);
+              console.error('Error actualizando recibo:', error);
               alert('Error al actualizar recibo. Ver consola para detalles.');
             }
           });
@@ -364,18 +359,18 @@ get pendienteCobro(): number {
         this.apiService.createRecibo(nuevoRecibo)
           .subscribe({
             next: (response: any) => {
-              console.log('✅ Respuesta de creación:', response);
+              console.log('Respuesta de creación:', response);
               
               if (response.success) {
                 this.cargarDatos();
                 this.cancelarEdicion();
-                alert('✅ Recibo creado correctamente');
+                alert('Recibo creado correctamente');
               } else {
-                alert('❌ Error al crear recibo: ' + (response.message || ''));
+                alert('Error al crear recibo: ' + (response.message || ''));
               }
             },
             error: (error) => {
-              console.error('❌ Error creando recibo:', error);
+              console.error('Error creando recibo:', error);
               alert('Error al crear recibo. Ver consola para detalles.');
             }
           });
@@ -386,11 +381,11 @@ get pendienteCobro(): number {
         control?.markAsTouched();
         
         if (control?.invalid) {
-          console.log(`❌ Campo ${key} inválido:`, control.errors);
+          console.log(`Campo ${key} inválido:`, control.errors);
         }
       });
       
-      alert('⚠️ Por favor, completa todos los campos requeridos correctamente.');
+      alert('Por favor, completa todos los campos requeridos correctamente.');
     }
   }
 
@@ -408,17 +403,17 @@ get pendienteCobro(): number {
       this.apiService.deleteRecibo(id)
         .subscribe({
           next: (response: any) => {
-            console.log('✅ Respuesta de eliminación:', response);
+            console.log('Respuesta de eliminación:', response);
             
             if (response.success || response.affected_rows > 0) {
               this.recibos = this.recibos.filter(r => r.id_recibo !== id);
-              alert('✅ Recibo eliminado correctamente');
+              alert('Recibo eliminado correctamente');
             } else {
-              alert('❌ Error al eliminar recibo');
+              alert('Error al eliminar recibo');
             }
           },
           error: (error) => {
-            console.error('❌ Error eliminando recibo:', error);
+            console.error('Error eliminando recibo:', error);
             alert('Error al eliminar recibo. Ver consola para detalles.');
           }
         });

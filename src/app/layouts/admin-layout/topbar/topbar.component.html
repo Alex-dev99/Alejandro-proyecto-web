@@ -23,7 +23,6 @@
           </li>
           <li><hr class="dropdown-divider"></li>
           <li>
-            <!-- Añadir preventDefault para evitar comportamiento por defecto del link -->
             <a class="dropdown-item text-danger" href="javascript:void(0)" (click)="logout(); $event.preventDefault()">
               <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
             </a>
@@ -31,7 +30,6 @@
         </ul>
       </div>
       
-      <!-- Mostrar botón de login si no está logueado -->
       <div *ngIf="!isLoggedIn">
         <a class="btn btn-admin" routerLink="/login">
           <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
